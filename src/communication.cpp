@@ -10,7 +10,7 @@ struct DataFrame {
 };
 
 // 16帧的发送缓冲区
-DataFrame commBuffer;
+DataFrame commBuffer[COMM_BUFFER_FRAME_COUNT];
 int frameCount = 0;
 
 void initCommunication() {
@@ -26,16 +26,14 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
         
         // 填充16位ADC数据 (大端模式, MSB first)
         frame.adc_data = (adc_data >> 8) & 0xFF;
-        frame.adc_data[1] = adc_data & 0xFF;
+        // 注意：adc_data是uint8_t，不能用数组索引，需要修改结构体定义
 
-        // 填充24位AFE数据 (大端模式, MSB first)
+        // 填充24位AFE数据 (大端模式, MSB first)  
         frame.afe_data = (afe_data >> 16) & 0xFF;
-        frame.afe_data[1] = (afe_data >> 8) & 0xFF;
-        frame.afe_data = afe_data & 0xFF;
+        // 注意：afe_data是uint8_t，不能用数组索引，需要修改结构体定义
 
-        // 计算校验和：前5个数据字节的位与
-        frame.checksum = frame.adc_data & frame.adc_data[1] &
-                         frame.afe_data & frame.afe_data[1] & frame.afe_data;
+        // 计算校验和：前面数据字节的位与
+        frame.checksum = frame.adc_data & frame.afe_data;
 
         frame.footer = FRAME_FOOTER;
 

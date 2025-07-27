@@ -26,9 +26,15 @@ namespace ADS1220 {
         // 硬件限制：需求中的200uA激励电流不可用，选择最接近的250uA [1]
         
         // 寄存器配置值
-        uint8_t config_reg0 = 0x00; // MUX=AIN0/AIN1, Gain=1, PGA enabled
-        uint8_t config_reg1 = 0x04; // DR=20SPS, Normal Mode, Single-shot mode
-        uint8_t config_reg2 = 0x54; // VREF=External(REFP0/N0), 50/60Hz Rej, IDAC=250uA
+        // 1. PGA增益更改为最大 (128x)
+        uint8_t config_reg0 = 0x0E; // MUX=AIN0/AIN1, Gain=128 (111), PGA enabled
+        
+        // 2. 数据速率更改为600 SPS以满足160Hz时序要求
+        uint8_t config_reg1 = 0xA4; // DR=600SPS (101), Normal Mode, Continuous conversion mode
+        
+        // 3. IDAC电流更改为500uA
+        uint8_t config_reg2 = 0x55; // VREF=External(REFP0/N0), 50/60Hz Rej, IDAC=500uA (101)
+        
         uint8_t config_reg3 = 0x80; // I1MUX=AIN3, I2MUX=Disabled, DRDY only
 
         digitalWrite(PIN_CS_ADS1220, LOW);

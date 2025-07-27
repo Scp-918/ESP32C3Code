@@ -35,5 +35,11 @@ void setup() {
 
 void loop() {
     // 核心架构：主循环只负责快速、非阻塞地运行状态机
-    runStateMachine();
+
+    runStateMachine(); 
+
+    /*
+    Serial.println("Main Loop Running.");
+    delay(1000);
+    */
 }
