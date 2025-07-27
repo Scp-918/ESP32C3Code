@@ -25,7 +25,7 @@ void initState() {
 void runStateMachine() {
     switch (currentState) {
         case STATE_IDLE:
-            // 等待160Hz定时器中断设置 newCycleFlag
+            // 等待主定时器中断设置 newCycleFlag
             if (newCycleFlag) {
                 noInterrupts(); // 进入临界区
                 newCycleFlag = false;
@@ -34,15 +34,15 @@ void runStateMachine() {
                 // 启动高电平脉冲
                 digitalWrite(PIN_SWITCH_CTRL, HIGH);
                 
-                // 启动50us和125us的单次定时器
-                startOneShotTimers();
+                // 不再需要启动单次定时器，因为主定时器已在运行
+                // startOneShotTimers(); // <--- 此行已删除
                 
                 currentState = STATE_PULSE_HIGH_STARTED;
             }
             break;
 
         case STATE_PULSE_HIGH_STARTED:
-            // 等待50us定时器中断设置 triggerAdcFlag
+            // 等待主定时器中断在50us时设置 triggerAdcFlag
             if (triggerAdcFlag) {
                 noInterrupts();
                 triggerAdcFlag = false;
@@ -60,7 +60,7 @@ void runStateMachine() {
         case STATE_READ_AD7680:
             // 在主循环中执行阻塞式SPI读取，避免在ISR中操作
             ad7680_data = AD7680::readData();
-            // 等待125us定时器中断设置 endPulseFlag
+            // 等待主定时器中断在125us时设置 endPulseFlag
             if (endPulseFlag) {
                 noInterrupts();
                 endPulseFlag = false;
@@ -75,7 +75,7 @@ void runStateMachine() {
 
         case STATE_PULSE_LOW_STARTED:
             // 等待3.75ms的延时
-            if (millis() - lowPulseStartTime >= AFE_TRIGGER_DELAY_MS) {
+            if (millis() - lowPulseStartTime >= (unsigned long)AFE_TRIGGER_DELAY_MS) {
                 currentState = STATE_TRIGGER_ADS1220;
             }
             break;
