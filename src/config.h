@@ -40,6 +40,6 @@
 // --- 模拟开光控制引脚 (Analog Switch Control Pin) ---
 // 高电平: 惠斯通电桥 (AD7680)
 // 低电平: 比例式电桥 (ADS1220)
-#define PIN_SWITCH_CTRL 0
+#define PIN_SWITCH_CTRL 12
 
 #endif // CONFIG_H

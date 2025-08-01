@@ -32,7 +32,7 @@ void runStateMachine() {
                 interrupts(); // 退出临界区
                 
                 // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, HIGH);
+                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
                 
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
@@ -40,7 +40,7 @@ void runStateMachine() {
                 currentState = STATE_PULSE_HIGH_STARTED;
             }
             break;
-
+        
         case STATE_PULSE_HIGH_STARTED:
             // 等待主定时器中断在50us时设置 triggerAdcFlag
             if (triggerAdcFlag) {
@@ -60,19 +60,28 @@ void runStateMachine() {
         case STATE_READ_AD7680:
             // 在主循环中执行阻塞式SPI读取，避免在ISR中操作
             ad7680_data = AD7680::readData();
+/*             //打印ad7680_data          
+            Serial.println(ad7680_data); // 可选：调试输出 */
+            
             // 等待主定时器中断在125us时设置 endPulseFlag
             if (endPulseFlag) {
                 noInterrupts();
                 endPulseFlag = false;
                 interrupts();
                 
-                // 结束高电平脉冲
+            
+/*                 // 结束高电平脉冲
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 lowPulseStartTime = millis(); // 记录低电平开始时间
-                currentState = STATE_PULSE_LOW_STARTED;
+                currentState = STATE_PULSE_LOW_STARTED; */
+            
+                // 持续高电平脉冲
+                currentState = STATE_PROCESS_DATA;
+
             }
             break;
-
+        
+        /*
         case STATE_PULSE_LOW_STARTED:
             // 等待3.75ms的延时
             if (millis() - lowPulseStartTime >= (unsigned long)AFE_TRIGGER_DELAY_MS) {
@@ -98,13 +107,21 @@ void runStateMachine() {
             ADS1220::powerDownIdacs(); // 测量后关闭IDAC
             currentState = STATE_PROCESS_DATA;
             break;
-
+        */
         case STATE_PROCESS_DATA:
+            /*
             // 封装数据并放入缓冲区
             addDataToBuffer(ad7680_data, ads1220_data);
             // 检查缓冲区是否已满并发送
             sendBufferIfFull();
+
+            */
+            addDataToBufferSingle(ad7680_data);
+            // 检查缓冲区是否已满并发送
+            sendBufferIfFullSingle();
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;
+        
+       addDataToBuffer(ad7680_data, ads1220_data);
     }
 }

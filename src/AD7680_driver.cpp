@@ -4,7 +4,7 @@
 namespace AD7680 {
 
     // AD7680 SPI设置
-    SPISettings spiSettings(2500000, MSBFIRST, SPI_MODE0);
+    SPISettings spiSettings(300000, MSBFIRST, SPI_MODE0);
 
     void init() {
         pinMode(PIN_CS_AD7680, OUTPUT);
@@ -35,6 +35,8 @@ namespace AD7680 {
 
         // 组合成一个32位整数以便于位移操作
         uint32_t raw_data = ((uint32_t)byte1 << 16) | ((uint32_t)byte2 << 8) | byte3;
+
+    
         
         // 数据格式为 4个前导零 + 16位数据 + 4个末尾零 (在24个时钟周期下)
         // 我们需要将整个24位数据右移4位来对齐

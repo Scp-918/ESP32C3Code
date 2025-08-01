@@ -31,6 +31,8 @@ void setup() {
     // 6. 初始化并启动定时器
     initTimers();
     Serial.println("Timers Initialized and Started. System is running.");
+    delay(5000);
+    digitalWrite(PIN_SWITCH_CTRL, HIGH);
 }
 
 void loop() {
