@@ -32,12 +32,13 @@ void runStateMachine() {
                 interrupts(); // 退出临界区
                 
                 // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
+                digitalWrite(PIN_SWITCH_CTRL, LOW);//调试时注意，目前为低状态
                 
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
-                
-                currentState = STATE_PULSE_HIGH_STARTED;
+                lowPulseStartTime = millis(); // 记录低电平开始时间
+                currentState = STATE_PULSE_LOW_STARTED; // 进入低电平脉冲状态
+
             }
             break;
         
@@ -79,25 +80,31 @@ void runStateMachine() {
                 currentState = STATE_PROCESS_DATA;
 
             }
-            break;
+            break; 
         
-        /*
+        
         case STATE_PULSE_LOW_STARTED:
             // 等待3.75ms的延时
             if (millis() - lowPulseStartTime >= (unsigned long)AFE_TRIGGER_DELAY_MS) {
                 currentState = STATE_TRIGGER_ADS1220;
+                //Serial.println("Time READY");
             }
             break;
 
         case STATE_TRIGGER_ADS1220:
             ADS1220::startConversion();
             currentState = STATE_WAIT_ADS1220_READY;
+            //Serial.println("start READY");
             break;
 
         case STATE_WAIT_ADS1220_READY:
             // 轮询DRDY引脚，等待数据就绪
             if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
                 currentState = STATE_READ_ADS1220;
+            } 
+            else if (millis() - lowPulseStartTime >= (unsigned long)AFE_LONGEST_DELAY_MS) {
+                currentState = STATE_PROCESS_DATA;
+                Serial.println("DRDY DISREADY");
             }
             // 可在此处添加超时逻辑
             break;
@@ -105,9 +112,11 @@ void runStateMachine() {
         case STATE_READ_ADS1220:
             ads1220_data = ADS1220::readData();
             ADS1220::powerDownIdacs(); // 测量后关闭IDAC
+            ads1220_data = 0;
+            Serial.println(ads1220_data);
             currentState = STATE_PROCESS_DATA;
             break;
-        */
+        
         case STATE_PROCESS_DATA:
             /*
             // 封装数据并放入缓冲区
@@ -116,9 +125,9 @@ void runStateMachine() {
             sendBufferIfFull();
 
             */
-            addDataToBufferSingle(ad7680_data);
+/*             addDataToBufferSingle(ads1220_data);
             // 检查缓冲区是否已满并发送
-            sendBufferIfFullSingle();
+            sendBufferIfFullSingle(); */
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;
         

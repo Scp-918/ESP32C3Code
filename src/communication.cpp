@@ -15,11 +15,11 @@ struct DataFrame {
 // 校验数据帧结构 (4字节)
 struct DataFrameSingle {
     uint8_t header;
-    uint8_t adc_datahigh; // 16位ADC数据的高8位
-    uint8_t adc_datalow;  // 16位ADC数据的低8位
-    /* uint8_t afe_datahigh; // 24位AFE数据的高8位
+/*     uint8_t adc_datahigh; // 16位ADC数据的高8位
+    uint8_t adc_datalow;  // 16位ADC数据的低8位 */
+    uint8_t afe_datahigh; // 24位AFE数据的高8位
     uint8_t afe_datamedium;  // 24位AFE数据的中间8位
-    uint8_t afe_datalow; // 24位AFE数据的低8位 */
+    uint8_t afe_datalow; // 24位AFE数据的低8位 
     uint8_t footer;
 };
 
@@ -77,14 +77,14 @@ void addDataToBufferSingle(uint16_t adc_data) {
         frame.header = FRAME_HEADER;
         
         
-        // 填充16位ADC数据 (大端模式, MSB first)
+/*         // 填充16位ADC数据 (大端模式, MSB first)
         frame.adc_datahigh = (adc_data >> 8) & 0xFF;
-        frame.adc_datalow = adc_data & 0xFF;
+        frame.adc_datalow = adc_data & 0xFF; */
         
- /*        // 填充24位AFE数据 (大端模式, MSB first)
+        // 填充24位AFE数据 (大端模式, MSB first)
         frame.afe_datahigh = (adc_data >> 16) & 0xFF;
         frame.afe_datamedium = (adc_data >> 8) & 0xFF;
-        frame.afe_datalow = adc_data & 0xFF; */
+        frame.afe_datalow = adc_data & 0xFF; 
 
         // 计算校验和：前面数据字节的位与
 

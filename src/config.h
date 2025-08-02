@@ -17,7 +17,8 @@
 #define PULSE_FREQUENCY 160       // 脉冲频率 (Hz)
 #define HIGH_PULSE_WIDTH_US 125   // 高电平脉冲宽度 (µs)
 #define ADC_TRIGGER_TIME_US 50    // AD7680 触发时间 (µs)
-#define AFE_TRIGGER_DELAY_MS 3.75 // ADS1220 在低电平开始后的触发延迟 (ms)
+#define AFE_TRIGGER_DELAY_MS 2.5 // ADS1220 在低电平开始后的触发延迟 (ms)
+#define AFE_LONGEST_DELAY_MS 6 // ADS1220 最长延迟 (ms)
 
 // =================================================================
 // == 引脚定义 (Pin Definitions)
@@ -28,7 +29,7 @@
 // 在ESP32-C3上, 默认的硬件SPI引脚是:
 #define PIN_SPI_SCLK 6
 #define PIN_SPI_MISO 2
-#define PIN_SPI_MOSI 7
+#define PIN_SPI_MOSI 3
 
 // --- ADC/AFE 片选引脚 (Chip Select Pins) ---
 #define PIN_CS_AD7680 10

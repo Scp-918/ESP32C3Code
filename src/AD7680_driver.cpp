@@ -4,7 +4,7 @@
 namespace AD7680 {
 
     // AD7680 SPI设置
-    SPISettings spiSettings(300000, MSBFIRST, SPI_MODE0);
+    SPISettings spiSettings(500000, MSBFIRST, SPI_MODE0);
 
     void init() {
         pinMode(PIN_CS_AD7680, OUTPUT);

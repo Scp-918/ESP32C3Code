@@ -9,6 +9,7 @@ namespace ADS1220 {
     void configure();
     void startConversion();
     uint32_t readData();
+    void powerUpIdacs();
     void powerDownIdacs();
 }
 
