@@ -118,33 +118,6 @@ namespace ADS1220 {
 
         return result;
     }
-    void powerUpIdacs() {
-        // 需求：测量结束后停止激励电流输出 [1]
-        // 寄存器配置值
-        // 1. PGA增益更改为最大 (128x)
-        uint8_t config_reg0 = 0x6E; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1 65
-        
-        // 2. 数据速率更改为600 SPS以满足160Hz时序要求
-        uint8_t config_reg1 = 0xC0; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1
-        
-        // 3. IDAC电流初始化为0A
-        uint8_t config_reg2 = 0x44; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
-        
-        uint8_t config_reg3 = 0x80; // I1MUX=AIN3 100, I2MUX=Disabled 000, DRDY only 0,0
-
-        digitalWrite(PIN_CS_ADS1220, LOW);
-        SPI.beginTransaction(spiSettings2);
-        
-        // WREG command: 从寄存器0开始，写入4个字节
-        SPI.transfer(0x40 | (0x00 << 2) | (4 - 1)); // 0x43
-        SPI.transfer(config_reg0);
-        SPI.transfer(config_reg1);
-        SPI.transfer(config_reg2);
-        SPI.transfer(config_reg3);
-
-        SPI.endTransaction();
-        digitalWrite(PIN_CS_ADS1220, HIGH);
-    }
 
     void powerDownIdacs() {
         // 寄存器配置值

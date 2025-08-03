@@ -39,11 +39,8 @@ void setup() {
     
     
 }
-
 void loop() {
     // 核心架构：主循环只负责快速、非阻塞地运行状态机
-
-
 /*     ADS1220::powerDownIdacs(); // 测量后关闭IDAC
     delay(2000); */
     //

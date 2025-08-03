@@ -105,8 +105,8 @@ void runStateMachine() {
                 currentState = STATE_READ_ADS1220;
             } 
             else if (millis() - lowPulseStartTime >= (unsigned long)AFE_LONGEST_DELAY_MS) {
+                // 超时处理
                 currentState = STATE_PROCESS_DATA;
-                Serial.println("DRDY DISREADY");
             }
             // 可在此处添加超时逻辑
             break;
