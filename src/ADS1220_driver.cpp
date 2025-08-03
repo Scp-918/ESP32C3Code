@@ -89,7 +89,7 @@ namespace ADS1220 {
         SPI.transfer(config_reg1);
         SPI.transfer(config_reg2);
         SPI.transfer(config_reg3);
-        delayMicroseconds(6); // 等待复位完成
+        delayMicroseconds(1); // 等待复位完成
         SPI.transfer(0x08); // START/SYNC command [1]
         SPI.endTransaction();
         digitalWrite(PIN_CS_ADS1220, HIGH);

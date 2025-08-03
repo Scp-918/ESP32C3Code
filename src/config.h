@@ -16,11 +16,11 @@
 #define COMM_BUFFER_FRAME_COUNT 5 // 每16帧打包发送一次
 
 // --- 时序控制 (Timing Control) ---
-#define PULSE_FREQUENCY 100       // 脉冲频率 (Hz)
-#define HIGH_PULSE_WIDTH_US 200   // 高电平脉冲宽度 (µs)
+#define PULSE_FREQUENCY 160       // 脉冲频率 (Hz)
+#define HIGH_PULSE_WIDTH_US 125   // 高电平脉冲宽度 (µs)
 #define ADC_TRIGGER_TIME_US 50    // AD7680 触发时间 (µs)
-#define AFE_TRIGGER_DELAY_MS 1 // ADS1220 在低电平开始后的触发延迟 (ms)
-#define AFE_LONGEST_DELAY_MS 9.5 // ADS1220 最长延迟 (ms)
+#define AFE_TRIGGER_DELAY_MS 3.2 // ADS1220 在低电平开始后的触发延迟 (ms)
+#define AFE_LONGEST_DELAY_MS 6 // ADS1220 最长延迟 (ms)
 
 // =================================================================
 // == 引脚定义 (Pin Definitions)

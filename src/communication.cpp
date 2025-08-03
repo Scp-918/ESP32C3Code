@@ -42,6 +42,7 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
 
         frame.header1 = FRAME_HEADER1;
         frame.header2 = FRAME_HEADER2;
+        
         // 填充16位ADC数据 (大端模式, MSB first)
         frame.adc_datahigh = (adc_data >> 8) & 0xFF;
         frame.adc_datalow = adc_data & 0xFF;
@@ -53,8 +54,8 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
         frame.afe_datalow = afe_data & 0xFF;
         // 注意：afe_data是uint8_t，不能用数组索引，需要修改结构体定义
 
-        // 计算校验和：前面数据字节的异或
-        frame.checksum = ((frame.adc_datahigh ^ frame.adc_datalow) ^ ((frame.afe_datahigh ^ frame.afe_datamedium) ^ frame.afe_datalow));
+        // 计算校验和：前面数据字节的位与
+        frame.checksum = frame.adc_datahigh & frame.adc_datalow & frame.afe_datahigh & frame.afe_datamedium & frame.afe_datalow;
 
         frame.footer1 = FRAME_FOOTER1;
         frame.footer2 = FRAME_FOOTER2;
@@ -91,7 +92,7 @@ void addDataToBufferSingle(uint32_t adc_data) {
 
         // 计算校验和：前面数据字节的位与
 
-        frame.footer = FRAME_HEADER2;
+        frame.footer = FRAME_FOOTER1;
 
         frameCountSingle++;
     }

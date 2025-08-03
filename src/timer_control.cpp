@@ -10,8 +10,8 @@ volatile int timer_counter = 0;
 
 // 定义事件触发的计数值
 const int ADC_TRIGGER_COUNT = 2;   // 2 * 25us = 50us
-const int PULSE_END_COUNT = 8;     // 5 * 25us = 125us
-const int CYCLE_END_COUNT = 1000000/PULSE_FREQUENCY/25;   // 250 * 25us = 6250us = 6.25ms (160 Hz)
+const int PULSE_END_COUNT = 5;     // 5 * 25us = 125us
+const int CYCLE_END_COUNT = 250;   // 250 * 25us = 6250us = 6.25ms (160 Hz)1000000/PULSE_FREQUENCY/25
 
 // 主定时器的中断服务程序，每25us调用一次
 void IRAM_ATTR onMasterTimer() {
