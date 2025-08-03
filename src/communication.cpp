@@ -54,8 +54,8 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
         frame.afe_datalow = afe_data & 0xFF;
         // 注意：afe_data是uint8_t，不能用数组索引，需要修改结构体定义
 
-        // 计算校验和：前面数据字节的位与
-        frame.checksum = frame.adc_datahigh & frame.adc_datalow & frame.afe_datahigh & frame.afe_datamedium & frame.afe_datalow;
+        // 计算校验和：前面数据字节的异或
+        frame.checksum = frame.adc_datahigh ^ frame.adc_datalow ^ frame.afe_datahigh ^ frame.afe_datamedium ^ frame.afe_datalow;
 
         frame.footer1 = FRAME_FOOTER1;
         frame.footer2 = FRAME_FOOTER2;
