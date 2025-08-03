@@ -33,10 +33,11 @@ void runStateMachine() {
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
                 digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
+                //lowPulseStartTime = millis(); // 记录低电平开始时间
                 currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
-                //lowPulseStartTime = millis(); // 记录低电平开始时间
+                
             }
             break;
         
@@ -46,6 +47,7 @@ void runStateMachine() {
                 noInterrupts();
                 triggerAdcFlag = false;
                 interrupts();
+                //Serial.println("Triggering AD7680 Conversion");
                 currentState = STATE_TRIGGER_AD7680;
             }
             break;
@@ -67,9 +69,13 @@ void runStateMachine() {
                 endPulseFlag = false;
                 interrupts();                            
                // 结束高电平脉冲
+                //Serial.println("Ending High Pulse");
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 lowPulseStartTime = millis(); // 记录低电平开始时间
-                currentState = STATE_PULSE_LOW_STARTED;            
+                currentState = STATE_PULSE_LOW_STARTED;    
+                //全高电压调试
+/*                 digitalWrite(PIN_SWITCH_CTRL, HIGH); // 保持高电平
+                currentState = STATE_PROCESS_DATA;    */      
 /*                 // 持续高电平脉冲
                 currentState = STATE_PROCESS_DATA; */
             }

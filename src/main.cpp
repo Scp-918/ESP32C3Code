@@ -52,7 +52,7 @@ void loop() {
     delay(3000); */
     runStateMachine(); 
     /*
-        Serial.println("Looping...");
+    Serial.println("Looping...");
     delay(2000);
     runStateMachine(); 
 
