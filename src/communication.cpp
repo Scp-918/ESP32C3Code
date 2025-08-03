@@ -2,14 +2,16 @@
 
 // 数据帧结构 (8字节)
 struct DataFrame {
-    uint8_t header;
+    uint8_t header1;
+    uint8_t header2;
     uint8_t adc_datahigh; // 16位ADC数据的高8位
     uint8_t adc_datalow;  // 16位ADC数据的低8位
     uint8_t afe_datahigh; // 24位AFE数据的高8位
     uint8_t afe_datamedium;  // 24位AFE数据的中间8位
     uint8_t afe_datalow; // 24位AFE数据的低8位
     uint8_t checksum;
-    uint8_t footer;
+    uint8_t footer1;
+    uint8_t footer2;
 };
 
 // 校验数据帧结构 (4字节)
@@ -38,8 +40,8 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
         // 获取当前帧的引用
         DataFrame &frame = commBuffer[frameCount];
 
-        frame.header = FRAME_HEADER;
-        
+        frame.header1 = FRAME_HEADER1;
+        frame.header2 = FRAME_HEADER2;
         // 填充16位ADC数据 (大端模式, MSB first)
         frame.adc_datahigh = (adc_data >> 8) & 0xFF;
         frame.adc_datalow = adc_data & 0xFF;
@@ -51,10 +53,11 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
         frame.afe_datalow = afe_data & 0xFF;
         // 注意：afe_data是uint8_t，不能用数组索引，需要修改结构体定义
 
-        // 计算校验和：前面数据字节的位与
-        frame.checksum = frame.adc_datahigh & frame.adc_datalow & frame.afe_datahigh & frame.afe_datamedium & frame.afe_datalow;
+        // 计算校验和：前面数据字节的异或
+        frame.checksum = ((frame.adc_datahigh ^ frame.adc_datalow) ^ ((frame.afe_datahigh ^ frame.afe_datamedium) ^ frame.afe_datalow));
 
-        frame.footer = FRAME_FOOTER;
+        frame.footer1 = FRAME_FOOTER1;
+        frame.footer2 = FRAME_FOOTER2;
 
         frameCount++;
     }
@@ -74,7 +77,7 @@ void addDataToBufferSingle(uint32_t adc_data) {
         // 获取当前帧的引用
         DataFrameSingle &frame = commBufferSingle[frameCountSingle];
 
-        frame.header = FRAME_HEADER;
+        frame.header = FRAME_HEADER1;
         
         
 /*         // 填充16位ADC数据 (大端模式, MSB first)
@@ -88,7 +91,7 @@ void addDataToBufferSingle(uint32_t adc_data) {
 
         // 计算校验和：前面数据字节的位与
 
-        frame.footer = FRAME_FOOTER;
+        frame.footer = FRAME_HEADER2;
 
         frameCountSingle++;
     }

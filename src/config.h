@@ -9,8 +9,10 @@
 
 // --- 通信设置 (Communication Settings) ---
 #define SERIAL_BAUD_RATE 115200
-#define FRAME_HEADER 0xAA
-#define FRAME_FOOTER 0xBB
+#define FRAME_HEADER1 0xAA
+#define FRAME_FOOTER1 0xCC
+#define FRAME_HEADER2 0xBB
+#define FRAME_FOOTER2 0xDD
 #define COMM_BUFFER_FRAME_COUNT 16 // 每16帧打包发送一次
 
 // --- 时序控制 (Timing Control) ---
