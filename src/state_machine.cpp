@@ -3,6 +3,7 @@
 #include "ADS1220_driver.h"
 #include "communication.h"
 #include "timer_control.h"
+#include "math.h"
 
 // 定义全局状态变量
 volatile SystemState currentState = STATE_IDLE;
@@ -92,6 +93,7 @@ void runStateMachine() {
             break;
 
         case STATE_TRIGGER_ADS1220:
+            ADS1220::reset();
             ADS1220::startConversion();
             currentState = STATE_WAIT_ADS1220_READY;
             //Serial.println("start READY");
@@ -109,12 +111,15 @@ void runStateMachine() {
             // 可在此处添加超时逻辑
             break;
 
-        case STATE_READ_ADS1220:
+        case STATE_READ_ADS1220:{
             ads1220_data = ADS1220::readData();
+            ADS1220::reset();
             ADS1220::powerDownIdacs(); // 测量后关闭IDAC
-            ads1220_data = 0;
-            Serial.println(ads1220_data);
+            //ads1220_data按照24位adc计算实际电压值
+            //double ads1220_datareal=ads1220_data/pow(2,24);
             currentState = STATE_PROCESS_DATA;
+            //Serial.println(ads1220_datareal, 4);
+            }
             break;
         
         case STATE_PROCESS_DATA:
@@ -125,12 +130,12 @@ void runStateMachine() {
             sendBufferIfFull();
 
             */
-/*             addDataToBufferSingle(ads1220_data);
+            addDataToBufferSingle(ads1220_data);
             // 检查缓冲区是否已满并发送
-            sendBufferIfFullSingle(); */
+            sendBufferIfFullSingle();
+            //addDataToBuffer(ad7680_data, ads1220_data);
+            //double ads1220_datareal2=0;
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;
-        
-       addDataToBuffer(ad7680_data, ads1220_data);
     }
 }

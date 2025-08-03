@@ -69,7 +69,7 @@ void sendBufferIfFull() {
     }
 }
 
-void addDataToBufferSingle(uint16_t adc_data) {
+void addDataToBufferSingle(uint32_t adc_data) {
     if (frameCountSingle < COMM_BUFFER_FRAME_COUNT) {
         // 获取当前帧的引用
         DataFrameSingle &frame = commBufferSingle[frameCountSingle];
