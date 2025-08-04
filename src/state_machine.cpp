@@ -3,7 +3,6 @@
 #include "ADS1220_driver.h"
 #include "communication.h"
 #include "timer_control.h"
-#include "math.h"
 
 // 定义全局状态变量
 volatile SystemState currentState = STATE_IDLE;
@@ -34,8 +33,6 @@ void runStateMachine() {
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
                 digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
-                //lowPulseStartTime = millis(); // 记录低电平开始时间
-                //Serial.println("Start");
                 currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
@@ -48,8 +45,6 @@ void runStateMachine() {
                 noInterrupts();
                 triggerAdcFlag = false;
                 interrupts();
-                //Serial.println("Triggering AD7680 Conversion");
-                //Serial.println("50us");
                 currentState = STATE_TRIGGER_AD7680;
             }
             break;
@@ -80,11 +75,6 @@ void runStateMachine() {
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 lowPulseStartTime = millis(); // 记录低电平开始时间
                 currentState = STATE_PULSE_LOW_STARTED;
-                //全高电压调试
-/*                 digitalWrite(PIN_SWITCH_CTRL, HIGH); // 保持高电平
-                currentState = STATE_PROCESS_DATA;    */      
-/*                 // 持续高电平脉冲
-                currentState = STATE_PROCESS_DATA; */
             }
             break; 
         
@@ -93,7 +83,6 @@ void runStateMachine() {
             // 等待3.75ms的延时
             if (millis() - lowPulseStartTime >= (unsigned long)AFE_TRIGGER_DELAY_MS) {
                 currentState = STATE_TRIGGER_ADS1220;
-                //Serial.println("Time READY");
             }
             break;
 
@@ -101,7 +90,6 @@ void runStateMachine() {
             ADS1220::reset();
             ADS1220::startConversion();
             currentState = STATE_WAIT_ADS1220_READY;
-            //Serial.println("start READY");
             break;
 
         case STATE_WAIT_ADS1220_READY:
@@ -121,9 +109,7 @@ void runStateMachine() {
             ADS1220::reset();
             ADS1220::powerDownIdacs(); // 测量后关闭IDAC
             //ads1220_data按照24位adc计算实际电压值
-            //double ads1220_datareal=ads1220_data/pow(2,24);
             currentState = STATE_PROCESS_DATA;
-            //Serial.println(ads1220_datareal, 4);
             }
             break;
         

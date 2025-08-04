@@ -41,27 +41,7 @@ void setup() {
 }
 void loop() {
     // 核心架构：主循环只负责快速、非阻塞地运行状态机
-/*     ADS1220::powerDownIdacs(); // 测量后关闭IDAC
-    delay(2000); */
-    //
-/*     ADS1220::reset();
-    ADS1220::powerUpIdacs();
-    delay(3000); 
-    ADS1220::reset();
-    ADS1220::powerDownIdacs(); // 测量后关闭IDAC
-    delay(3000); */
-    runStateMachine(); 
-    /*
-    Serial.println("Looping...");
-    delay(2000);
+
     runStateMachine(); 
 
-
-    digitalWrite(PIN_SPI_MOSI, HIGH);
-    delay(2000);
-    digitalWrite(PIN_SPI_MOSI, LOW);
-    delay(2000);
-    Serial.println("Main Loop Running.");
-    delay(1000);
-    */
 }

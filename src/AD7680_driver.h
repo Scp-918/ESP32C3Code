@@ -7,7 +7,6 @@ namespace AD7680 {
     void init();
     void triggerConversion();
     uint16_t readData();
-    uint16_t readData3();
     uint16_t readDataMean();
 }
 

@@ -4,7 +4,7 @@
 namespace AD7680 {
 
     // AD7680 SPI设置
-    SPISettings spiSettings(1500000, MSBFIRST, SPI_MODE0);
+    SPISettings spiSettings(2000000, MSBFIRST, SPI_MODE0);
 
     void init() {
         pinMode(PIN_CS_AD7680, OUTPUT);
@@ -42,58 +42,6 @@ namespace AD7680 {
         // 数据格式为 4个前导零 + 16位数据 + 4个末尾零 (在24个时钟周期下)
         // 我们需要将整个24位数据右移4位来对齐
         uint16_t result = (raw_data >> 4) & 0xFFFF;
-        //Serial.println("adc");
-        return result;
-        
-    }
-
-    uint16_t readData3() {
-        // 第一次读取3个字节(24个时钟)
-        digitalWrite(PIN_CS_AD7680, LOW);
-        SPI.beginTransaction(spiSettings);    
-        // 读取3个字节
-        uint8_t byte1 = SPI.transfer(0x00);
-        uint8_t byte2 = SPI.transfer(0x00);
-        uint8_t byte3 = SPI.transfer(0x00);
-        SPI.endTransaction();
-        digitalWrite(PIN_CS_AD7680, HIGH); // 结束通信
-        // 组合成一个32位整数以便于位移操作
-        uint32_t raw_data = ((uint32_t)byte1 << 16) | ((uint32_t)byte2 << 8) | byte3;            
-        // 数据格式为 4个前导零 + 16位数据 + 4个末尾零 (在24个时钟周期下)
-        // 我们需要将整个24位数据右移4位来对齐
-        uint16_t result = (raw_data >> 4) & 0xFFFF;
-
-        //第二次读取
-        digitalWrite(PIN_CS_AD7680, LOW);
-        SPI.beginTransaction(spiSettings);    
-        // 读取3个字节
-        byte1 = SPI.transfer(0x00);
-        byte2 = SPI.transfer(0x00);
-        byte3 = SPI.transfer(0x00);
-        SPI.endTransaction();
-        digitalWrite(PIN_CS_AD7680, HIGH); // 结束通信
-        // 组合成一个32位整数以便于位移操作
-        raw_data = ((uint32_t)byte1 << 16) | ((uint32_t)byte2 << 8) | byte3;            
-        // 数据格式为 4个前导零 + 16位数据 + 4个末尾零 (在24个时钟周期下)
-        // 我们需要将整个24位数据右移4位来对齐
-        uint16_t result2 = (raw_data >> 4) & 0xFFFF;
-
-        //第三次读取
-        digitalWrite(PIN_CS_AD7680, LOW);
-        SPI.beginTransaction(spiSettings);    
-        // 读取3个字节
-        byte1 = SPI.transfer(0x00);
-        byte2 = SPI.transfer(0x00);
-        byte3 = SPI.transfer(0x00);
-        SPI.endTransaction();
-        digitalWrite(PIN_CS_AD7680, HIGH); // 结束通信
-        // 组合成一个32位整数以便于位移操作
-        raw_data = ((uint32_t)byte1 << 16) | ((uint32_t)byte2 << 8) | byte3;            
-        // 数据格式为 4个前导零 + 16位数据 + 4个末尾零 (在24个时钟周期下)
-        // 我们需要将整个24位数据右移4位来对齐
-        uint16_t result3 = (raw_data >> 4) & 0xFFFF;
-
-        
         //Serial.println("adc");
         return result;
         
