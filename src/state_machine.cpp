@@ -10,6 +10,7 @@ volatile SystemState currentState = STATE_IDLE;
 volatile bool newCycleFlag = false;
 volatile bool triggerAdcFlag = false;
 volatile bool endPulseFlag = false;
+volatile bool startADCFlag = false;
 
 // 存储采集数据的变量
 uint16_t ad7680_data = 0;
@@ -34,10 +35,10 @@ void runStateMachine() {
                 // 启动高电平脉冲
                 digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
                 //lowPulseStartTime = millis(); // 记录低电平开始时间
+                //Serial.println("Start");
                 currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
-                
             }
             break;
         
@@ -48,6 +49,7 @@ void runStateMachine() {
                 triggerAdcFlag = false;
                 interrupts();
                 //Serial.println("Triggering AD7680 Conversion");
+                //Serial.println("50us");
                 currentState = STATE_TRIGGER_AD7680;
             }
             break;
@@ -55,12 +57,17 @@ void runStateMachine() {
         case STATE_TRIGGER_AD7680:
             // 触发AD7680转换 (仅拉低CS线)
             AD7680::triggerConversion();
+            //Serial.println("CS");
+            startADCFlag = true;
             currentState = STATE_READ_AD7680;
             break;
 
         case STATE_READ_AD7680:
             // 在主循环中执行阻塞式SPI读取，避免在ISR中操作
-            ad7680_data = AD7680::readData();
+            if (startADCFlag) {
+                ad7680_data = AD7680::readData();
+                startADCFlag = false;
+            }            
 /*          //打印ad7680_data          
             Serial.println(ad7680_data); // 可选：调试输出 */
             // 等待主定时器中断在125us时设置 endPulseFlag
@@ -72,7 +79,7 @@ void runStateMachine() {
                 //Serial.println("Ending High Pulse");
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 lowPulseStartTime = millis(); // 记录低电平开始时间
-                currentState = STATE_PULSE_LOW_STARTED;    
+                currentState = STATE_PULSE_LOW_STARTED;
                 //全高电压调试
 /*                 digitalWrite(PIN_SWITCH_CTRL, HIGH); // 保持高电平
                 currentState = STATE_PROCESS_DATA;    */      

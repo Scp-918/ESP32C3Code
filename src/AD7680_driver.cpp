@@ -15,6 +15,7 @@ namespace AD7680 {
         // 触发转换仅需将CS拉低
         // 实际的SPI通信在readData()中进行
         digitalWrite(PIN_CS_AD7680, LOW);
+        //Serial.println("CS down");
     }
 
     uint16_t readData() {
@@ -41,8 +42,9 @@ namespace AD7680 {
         // 数据格式为 4个前导零 + 16位数据 + 4个末尾零 (在24个时钟周期下)
         // 我们需要将整个24位数据右移4位来对齐
         uint16_t result = (raw_data >> 4) & 0xFFFF;
-
+        //Serial.println("adc");
         return result;
+        
     }
 }
 
