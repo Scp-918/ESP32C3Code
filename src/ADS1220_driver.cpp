@@ -26,8 +26,8 @@ namespace ADS1220 {
         // 硬件限制：需求中的200uA激励电流不可用，选择最接近的250uA [1]
         
         // 寄存器配置值
-        // 1. PGA增益更改为最大 (128x)
-        uint8_t config_reg0 = 0x6E; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1
+        // 1. PGA增益更改为 (4x)
+        uint8_t config_reg0 = 0x65; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1
         
         // 2. 数据速率更改为600 SPS以满足160Hz时序要求
         uint8_t config_reg1 = 0xA0; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1
@@ -69,8 +69,8 @@ namespace ADS1220 {
     void startConversion() {
         // 需求：测量结束后停止激励电流输出 [1]
         // 寄存器配置值
-        // 1. PGA增益更改为最大 (128x)
-        uint8_t config_reg0 = 0x6E; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1
+        // 1. PGA增益更改为 (4x)
+        uint8_t config_reg0 = 0x65; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1
         
         // 2. 数据速率更改为1000 SPS以满足160Hz时序要求
         uint8_t config_reg1 = 0xA0; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1
@@ -120,7 +120,7 @@ namespace ADS1220 {
 
     void powerDownIdacs() {
         // 寄存器配置值
-        // 1. PGA增益更改为最大 (128x)
+        // 1. PGA增益更改为(4x)
         uint8_t config_reg0 = 0x61; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1
         
         // 2. 数据速率更改为600 SPS以满足160Hz时序要求
