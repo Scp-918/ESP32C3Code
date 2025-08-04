@@ -56,7 +56,7 @@ void runStateMachine() {
 
         case STATE_TRIGGER_AD7680:
             // 触发AD7680转换 (仅拉低CS线)
-            AD7680::triggerConversion();
+            //AD7680::triggerConversion();
             //Serial.println("CS");
             startADCFlag = true;
             currentState = STATE_READ_AD7680;
@@ -65,7 +65,7 @@ void runStateMachine() {
         case STATE_READ_AD7680:
             // 在主循环中执行阻塞式SPI读取，避免在ISR中操作
             if (startADCFlag) {
-                ad7680_data = AD7680::readData();
+                ad7680_data = AD7680::readDataMean();
                 startADCFlag = false;
             }            
 /*          //打印ad7680_data          
