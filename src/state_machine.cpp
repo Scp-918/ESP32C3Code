@@ -74,7 +74,7 @@ void runStateMachine() {
                 //Serial.println("Ending High Pulse");
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 lowPulseStartTime = millis(); // 记录低电平开始时间
-                currentState = STATE_PULSE_LOW_STARTED;
+                currentState = STATE_PROCESS_DATA;
             }
             break; 
         

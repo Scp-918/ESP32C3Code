@@ -10,6 +10,7 @@ namespace ADS1220 {
     void startConversion();
     uint32_t readData();
     void powerDownIdacs();
+    void powerDown();
 }
 
 #endif // ADS1220_DRIVER_H

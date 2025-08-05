@@ -21,7 +21,6 @@ void setup() {
     // 3. 初始化硬件驱动
     AD7680::init();
     ADS1220::init();
-
     // 4. 配置外部芯片
     ADS1220::reset();
     ADS1220::configure();
@@ -41,7 +40,20 @@ void setup() {
 }
 void loop() {
     // 核心架构：主循环只负责快速、非阻塞地运行状态机
+    Serial.println("Starting a new conversion cycle...");
+    // 1. 确保IDAC是开启的 (通过configure)
+    ADS1220::reset();
+    ADS1220::configure(); // IDAC设置为250uA
+    Serial.println("ADS1220 configured. IDAC should be ON (250uA).");
+    delay(10000); // 观察IDAC开启状态
 
-    runStateMachine(); 
+    // 2. 发送POWERDOWN指令
+    Serial.println("Sending POWERDOWN command...");
+    ADS1220::powerDown();
+    Serial.println("POWERDOWN command sent. IDAC should be OFF now.");
+    Serial.println("Device will stay in power-down mode for 5 seconds...");
+    delay(10000); // 长时间观察IDAC关闭状态
+    //runStateMachine(); 
 
+    //delay(3000);
 }
