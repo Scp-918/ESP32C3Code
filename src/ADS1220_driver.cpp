@@ -4,7 +4,7 @@
 namespace ADS1220 {
 
     // ADS1220 SPI设置 (模式1)
-    SPISettings spiSettings2(2048000, MSBFIRST, SPI_MODE1);
+    SPISettings spiSettings2(2000000, MSBFIRST, SPI_MODE1);
 
     void init() {
         pinMode(PIN_CS_ADS1220, OUTPUT);
@@ -13,12 +13,12 @@ namespace ADS1220 {
     }
 
     void reset() {
-        digitalWrite(PIN_CS_ADS1220, LOW);
         SPI.beginTransaction(spiSettings2);
+        digitalWrite(PIN_CS_ADS1220, LOW);        
         SPI.transfer(0x06); // RESET command [1]
-        SPI.endTransaction();
         digitalWrite(PIN_CS_ADS1220, HIGH);
-        delayMicroseconds(500); // 等待复位完成
+        SPI.endTransaction();       
+        delayMicroseconds(510); // 等待复位完成
     }
 
     void configure() {
@@ -37,9 +37,9 @@ namespace ADS1220 {
         uint8_t config_reg2 = 0x44; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
         
         uint8_t config_reg3 = 0x80; // I1MUX=AIN3 100, I2MUX=Disabled 000, DRDY only 0,0
-
-        digitalWrite(PIN_CS_ADS1220, LOW);
         SPI.beginTransaction(spiSettings2);
+        digitalWrite(PIN_CS_ADS1220, LOW);
+        
         
         // WREG command: 从寄存器0开始，写入4个字节
         SPI.transfer(0x40 | (0x00 << 2) | (4 - 1)); // 0x43
@@ -48,8 +48,9 @@ namespace ADS1220 {
         SPI.transfer(config_reg2);
         SPI.transfer(config_reg3);
         
-        SPI.endTransaction();
+        
         digitalWrite(PIN_CS_ADS1220, HIGH);
+        SPI.endTransaction();
     }
 
 /*     void startConversion() {
@@ -80,9 +81,9 @@ namespace ADS1220 {
         uint8_t config_reg2 = 0x44; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
         
         uint8_t config_reg3 = 0x80; // I1MUX=AIN3 100, I2MUX=Disabled 000, DRDY only 0,0
-
-        digitalWrite(PIN_CS_ADS1220, LOW);
         SPI.beginTransaction(spiSettings2);
+        digitalWrite(PIN_CS_ADS1220, LOW);
+        
         
         // WREG command: 从寄存器0开始，写入4个字节
         SPI.transfer(0x40 | (0x00 << 2) | (4 - 1)); // 0x43
@@ -92,21 +93,22 @@ namespace ADS1220 {
         SPI.transfer(config_reg3);
         delayMicroseconds(5); // 等待复位完成
         SPI.transfer(0x08); // START/SYNC command [1]
-        SPI.endTransaction();
+        
         digitalWrite(PIN_CS_ADS1220, HIGH);
+        SPI.endTransaction();
     }
 
     uint32_t readData() {
-        digitalWrite(PIN_CS_ADS1220, LOW);
         SPI.beginTransaction(spiSettings2);
-        
+        digitalWrite(PIN_CS_ADS1220, LOW);
+                
         // 读取3个字节的24位数据
         uint8_t byte1 = SPI.transfer(0x00);
         uint8_t byte2 = SPI.transfer(0x00);
         uint8_t byte3 = SPI.transfer(0x00);
-
-        SPI.endTransaction();
+        
         digitalWrite(PIN_CS_ADS1220, HIGH);
+        SPI.endTransaction();
 
         // 组合成32位数据
         uint32_t result = ((uint32_t)byte1 << 16) | ((uint32_t)byte2 << 8) | byte3;
@@ -131,9 +133,9 @@ namespace ADS1220 {
         uint8_t config_reg2 = 0x40; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
         
         uint8_t config_reg3 = 0x80; // I1MUX=AIN3 100, I2MUX=Disabled 000, DRDY only 0,0
-
-        digitalWrite(PIN_CS_ADS1220, LOW);
         SPI.beginTransaction(spiSettings2);
+        digitalWrite(PIN_CS_ADS1220, LOW);
+        
         
         // WREG command: 从寄存器0开始，写入4个字节
         SPI.transfer(0x40 | (0x00 << 2) | (4 - 1)); // 0x43
@@ -142,17 +144,18 @@ namespace ADS1220 {
         SPI.transfer(config_reg2);
         SPI.transfer(config_reg3);
 
-        SPI.endTransaction();
+        
         digitalWrite(PIN_CS_ADS1220, HIGH);
+        SPI.endTransaction();
     }
 
     void powerDown() {
         // 寄存器配置值
-        digitalWrite(PIN_CS_ADS1220, LOW);
-        SPI.beginTransaction(spiSettings2);  
+        SPI.beginTransaction(spiSettings2);
+        digitalWrite(PIN_CS_ADS1220, LOW);          
         SPI.transfer(0x02);
-        SPI.endTransaction();
         digitalWrite(PIN_CS_ADS1220, HIGH);
+        SPI.endTransaction();
     }
 
 }
