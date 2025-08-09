@@ -32,9 +32,9 @@ void runStateMachine() {
                 newCycleFlag = false;
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, LOW);//调试时注意，目前为低状态
+                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
                 lowPulseStartTime = millis(); // 记录低电平开始时间
-                currentState = STATE_PULSE_LOW_STARTED; // 进入高电平脉冲状态
+                currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
 
@@ -62,7 +62,7 @@ void runStateMachine() {
         case STATE_READ_AD7680:
             // 在主循环中执行阻塞式SPI读取，避免在ISR中操作
             if (startADCFlag) {
-                ad7680_data = AD7680::readDataMean();
+                ad7680_data = AD7680::readDataMean(ad7680_data);
                 startADCFlag = false;
             }            
 /*          //打印ad7680_data          
@@ -76,7 +76,7 @@ void runStateMachine() {
                 //Serial.println("Ending High Pulse");
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 lowPulseStartTime = millis(); // 记录低电平开始时间
-                currentState = STATE_PROCESS_DATA;
+                currentState = STATE_PULSE_LOW_STARTED;
             }
             break; 
         

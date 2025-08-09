@@ -48,7 +48,7 @@ void setup() {
 void loop() {
     // 核心架构：主循环只负责快速、非阻塞地运行状态机
     // 1. 确保IDAC是开启的 (通过configure)
-    /*
+    
     ADS1220::reset();
     ADS1220::configure(); // IDAC设置为250uA
     Serial.println("ADS1220 configured. IDAC should be ON (250uA).");
@@ -62,20 +62,24 @@ void loop() {
     ADS1220::powerDown();
     Serial.println("POWERDOWN command sent. IDAC should be OFF now.");
     delay(5000); // 长时间观察IDAC关闭状态
-    */
+    
+
     
     //runStateMachine(); 
 
     //delay(3000);
+    /*
     delay(100);
     ADS1220::startsync();
     while(digitalRead(PIN_DRDY_ADS1220) ==HIGH){
     }
     if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
         ads1220_data3 = ADS1220::readData();
-        ADS1220::powerDown(); // 测量后关闭IDAC
+        //ADS1220::powerDown(); // 测量后关闭IDAC
     } 
     addDataToBuffer(ad7680_data3, ads1220_data3);
     // 检查缓冲区是否已满并发送
     sendBufferIfFull(); 
+    */
+    
 }

@@ -47,7 +47,7 @@ namespace AD7680 {
         
     }
 
-    uint16_t readDataMean() {
+    uint16_t readDataMean(uint16_t ad7680_data) {
         uint8_t byte1 = 0;
         uint8_t byte2 = 0;
         uint8_t byte3 = 0;
@@ -109,8 +109,8 @@ namespace AD7680 {
             // --- 步骤 2: 剔除离群值并计算最终平均值 ---
 
             // 定义有效数据范围
-            float lower_bound = mean - 3 * std_dev;
-            float upper_bound = mean + 3 * std_dev;
+            float lower_bound = mean - 2 * std_dev;
+            float upper_bound = mean + 2 * std_dev;
 
             uint32_t final_sum = 0;
             uint8_t final_count = 0;
@@ -128,7 +128,7 @@ namespace AD7680 {
                 result = static_cast<uint16_t>(round(static_cast<float>(final_sum) / final_count));
             } else {
                 // 备用逻辑: 如果所有值都被视为离群值，则返回原始平均值
-                result = static_cast<uint16_t>(round(mean));
+                result = ad7680_data;
             }
         }
 
