@@ -11,6 +11,7 @@ namespace ADS1220 {
     uint32_t readData();
     void powerDownIdacs();
     void powerDown();
+    void startsync();
 }
 
 #endif // ADS1220_DRIVER_H

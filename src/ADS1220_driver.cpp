@@ -75,8 +75,8 @@ namespace ADS1220 {
         uint8_t config_reg0 = 0x65; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 1
         
         // 2. 数据速率更改为1000 SPS以满足160Hz时序要求
-        uint8_t config_reg1 = 0x90; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1
-        
+        //uint8_t config_reg1 = 0x90; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1
+        uint8_t config_reg1 = 0x00;
         // 3. IDAC电流初始化为0A
         uint8_t config_reg2 = 0x44; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
         
@@ -154,6 +154,15 @@ namespace ADS1220 {
         SPI.beginTransaction(spiSettings2);
         digitalWrite(PIN_CS_ADS1220, LOW);          
         SPI.transfer(0x02);
+        digitalWrite(PIN_CS_ADS1220, HIGH);
+        SPI.endTransaction();
+    }
+
+    void startsync() {
+        // 寄存器配置值
+        SPI.beginTransaction(spiSettings2);
+        digitalWrite(PIN_CS_ADS1220, LOW);          
+        SPI.transfer(0x08);
         digitalWrite(PIN_CS_ADS1220, HIGH);
         SPI.endTransaction();
     }

@@ -32,10 +32,12 @@ void runStateMachine() {
                 newCycleFlag = false;
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
-                currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
+                digitalWrite(PIN_SWITCH_CTRL, LOW);//调试时注意，目前为低状态
+                lowPulseStartTime = millis(); // 记录低电平开始时间
+                currentState = STATE_PULSE_LOW_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
+
             }
             break;
         
@@ -87,8 +89,9 @@ void runStateMachine() {
             break;
 
         case STATE_TRIGGER_ADS1220:
-            ADS1220::reset();
-            ADS1220::startConversion();
+            //ADS1220::reset();
+            //ADS1220::startConversion();
+            ADS1220::startsync();
             currentState = STATE_WAIT_ADS1220_READY;
             break;
 
@@ -106,8 +109,8 @@ void runStateMachine() {
 
         case STATE_READ_ADS1220:{
             ads1220_data = ADS1220::readData();
-            ADS1220::reset();
-            ADS1220::powerDownIdacs(); // 测量后关闭IDAC
+            //ADS1220::reset();
+            ADS1220::powerDown(); // 测量后关闭IDAC
             //ads1220_data按照24位adc计算实际电压值
             currentState = STATE_PROCESS_DATA;
             }
