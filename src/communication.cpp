@@ -35,7 +35,7 @@ void initCommunication() {
     Serial.begin(SERIAL_BAUD_RATE);
 }
 
-void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
+void addDataToBuffer(uint16_t adc_data, uint16_t afe_data) {
     if (frameCount < COMM_BUFFER_FRAME_COUNT) {
         // 获取当前帧的引用
         DataFrame &frame = commBuffer[frameCount];
@@ -49,7 +49,7 @@ void addDataToBuffer(uint16_t adc_data, uint32_t afe_data) {
         // 注意：adc_data是uint8_t，不能用数组索引，需要修改结构体定义
 
         // 填充24位AFE数据 (大端模式, MSB first)  
-        frame.afe_datahigh = (afe_data >> 16) & 0xFF;
+        frame.afe_datahigh = 0x00;
         frame.afe_datamedium = (afe_data >> 8) & 0xFF;
         frame.afe_datalow = afe_data & 0xFF;
         // 注意：afe_data是uint8_t，不能用数组索引，需要修改结构体定义

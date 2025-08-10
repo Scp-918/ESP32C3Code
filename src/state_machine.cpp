@@ -39,6 +39,7 @@ void runStateMachine() {
                 currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
+                //Serial.println("Pulse Start");
 
             }
             break;
@@ -66,6 +67,7 @@ void runStateMachine() {
             if (startADCFlag) {
                 ad7680_data = AD7680::readDataMean(ad7680_data);
                 startADCFlag = false;
+                //Serial.println("AD7680::read");
             }            
 /*          //打印ad7680_data          
             Serial.println(ad7680_data); // 可选：调试输出 */
@@ -90,12 +92,14 @@ void runStateMachine() {
                 currentState = STATE_TRIGGER_ADS1220;
             }
             */
+            ADS1220::reset();
             ADS1220::configure(); // IDAC设置为250uA
             while(digitalRead(PIN_DRDY_ADS1220) ==HIGH){
             }
             if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
                 ads1220_data2 = ADS1220::readData();
             } 
+            //Serial.println("AD1220::read");
             if (triggerAFEFlag) {
                 noInterrupts();
                 triggerAFEFlag = false;
@@ -111,6 +115,7 @@ void runStateMachine() {
             //currentState = STATE_WAIT_ADS1220_READY;
             startADCFlag = true;
             currentState = STATE_READ_ADS1220;
+            //Serial.println("STATE_READ_ADS1220");
             break;
         /*
         case STATE_WAIT_ADS1220_READY:
@@ -127,12 +132,13 @@ void runStateMachine() {
         */
         case STATE_READ_ADS1220:
             if (startADCFlag) {
-                ad1220_data = AD7680::readDataMean(ad1220_data);
+                ads1220_data = AD7680::readDataMean(ads1220_data);
                 startADCFlag = false;
             } 
             //ads1220_data = ADS1220::readData();
             //ADS1220::reset();
             ADS1220::powerDown(); // 测量后关闭IDAC
+            //Serial.println("AD1220end");
             //ads1220_data按照24位adc计算实际电压值
             currentState = STATE_PROCESS_DATA;
             break;
@@ -142,7 +148,7 @@ void runStateMachine() {
             addDataToBuffer(ad7680_data, ads1220_data);
             // 检查缓冲区是否已满并发送
             sendBufferIfFull();
-
+            //Serial.println("Final");
 /*             addDataToBufferSingle(ads1220_data);
             // 检查缓冲区是否已满并发送
             sendBufferIfFullSingle(); */
