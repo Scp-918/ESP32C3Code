@@ -76,7 +76,7 @@ namespace ADS1220 {
         
         // 2. 数据速率更改为1000 SPS以满足160Hz时序要求
         //uint8_t config_reg1 = 0x90; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1
-        uint8_t config_reg1 = 0x00;
+        uint8_t config_reg1 = 0xA0;
         // 3. IDAC电流初始化为0A
         uint8_t config_reg2 = 0x44; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
         

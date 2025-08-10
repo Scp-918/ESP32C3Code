@@ -12,7 +12,8 @@ volatile int timer_counter = 0;
 const int ADC_TRIGGER_COUNT = ADC_TRIGGER_TIME_US/25;   // 2 * 25us = 50us
 const int PULSE_END_COUNT = HIGH_PULSE_WIDTH_US/25;     // 5 * 25us = 125us
 const int CYCLE_END_COUNT = 1000000/PULSE_FREQUENCY/25;   // 250 * 25us = 6250us = 6.25ms (160 Hz)1000000/PULSE_FREQUENCY/25
-
+const int AFE_TRIGGER_COUNT = 1000000/PULSE_FREQUENCY/25-PULSE_END_COUNT-100;     // 5 * 25us = 125us
+const int AFE_END_COUNT = 1000000/PULSE_FREQUENCY/25-100;     // 5 * 25us = 125us
 // 主定时器的中断服务程序，每25us调用一次
 void IRAM_ATTR onMasterTimer() {
     // 在周期的开始 (t=0) 设置新周期标志
@@ -28,6 +29,10 @@ void IRAM_ATTR onMasterTimer() {
         triggerAdcFlag = true;
     } else if (timer_counter == PULSE_END_COUNT) {
         endPulseFlag = true;
+    } else if (timer_counter == AFE_TRIGGER_COUNT) {
+        triggerAFEFlag = true;
+    } else if (timer_counter == PULSE_END_COUNT) {
+        endAFEFlag = true;
     }
 
     // 如果周期结束，重置计数器

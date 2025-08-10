@@ -21,6 +21,9 @@ extern volatile SystemState currentState;
 extern volatile bool newCycleFlag;
 extern volatile bool triggerAdcFlag;
 extern volatile bool endPulseFlag;
+extern volatile bool startADCFlag;
+extern volatile bool triggerAFEFlag;
+extern volatile bool endAFEFlag;
 
 // 声明状态机初始化和运行函数
 void initState();

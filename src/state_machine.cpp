@@ -10,10 +10,13 @@ volatile bool newCycleFlag = false;
 volatile bool triggerAdcFlag = false;
 volatile bool endPulseFlag = false;
 volatile bool startADCFlag = false;
+volatile bool triggerAFEFlag = false;
+volatile bool endAFEFlag = false;
 
 // 存储采集数据的变量
 uint16_t ad7680_data = 0;
-uint32_t ads1220_data = 0;
+uint16_t ads1220_data = 0;
+uint16_t ads1220_data2 = 0;
 
 // 用于AFE触发延时的计时器
 unsigned long lowPulseStartTime = 0;
@@ -33,7 +36,6 @@ void runStateMachine() {
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
                 digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
-                lowPulseStartTime = millis(); // 记录低电平开始时间
                 currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
@@ -75,7 +77,7 @@ void runStateMachine() {
                // 结束高电平脉冲
                 //Serial.println("Ending High Pulse");
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
-                lowPulseStartTime = millis(); // 记录低电平开始时间
+                //lowPulseStartTime = millis(); // 记录低电平开始时间
                 currentState = STATE_PULSE_LOW_STARTED;
             }
             break; 
@@ -83,7 +85,21 @@ void runStateMachine() {
         
         case STATE_PULSE_LOW_STARTED:
             // 等待3.75ms的延时
+            /*
             if (millis() - lowPulseStartTime >= (unsigned long)AFE_TRIGGER_DELAY_MS) {
+                currentState = STATE_TRIGGER_ADS1220;
+            }
+            */
+            ADS1220::configure(); // IDAC设置为250uA
+            while(digitalRead(PIN_DRDY_ADS1220) ==HIGH){
+            }
+            if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
+                ads1220_data2 = ADS1220::readData();
+            } 
+            if (triggerAFEFlag) {
+                noInterrupts();
+                triggerAFEFlag = false;
+                interrupts();
                 currentState = STATE_TRIGGER_ADS1220;
             }
             break;
@@ -91,10 +107,12 @@ void runStateMachine() {
         case STATE_TRIGGER_ADS1220:
             //ADS1220::reset();
             //ADS1220::startConversion();
-            ADS1220::startsync();
-            currentState = STATE_WAIT_ADS1220_READY;
+            //ADS1220::startsync();
+            //currentState = STATE_WAIT_ADS1220_READY;
+            startADCFlag = true;
+            currentState = STATE_READ_ADS1220;
             break;
-
+        /*
         case STATE_WAIT_ADS1220_READY:
             // 轮询DRDY引脚，等待数据就绪
             if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
@@ -106,14 +124,17 @@ void runStateMachine() {
             }
             // 可在此处添加超时逻辑
             break;
-
-        case STATE_READ_ADS1220:{
-            ads1220_data = ADS1220::readData();
+        */
+        case STATE_READ_ADS1220:
+            if (startADCFlag) {
+                ad1220_data = AD7680::readDataMean(ad1220_data);
+                startADCFlag = false;
+            } 
+            //ads1220_data = ADS1220::readData();
             //ADS1220::reset();
             ADS1220::powerDown(); // 测量后关闭IDAC
             //ads1220_data按照24位adc计算实际电压值
             currentState = STATE_PROCESS_DATA;
-            }
             break;
         
         case STATE_PROCESS_DATA:

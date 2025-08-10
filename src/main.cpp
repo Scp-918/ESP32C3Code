@@ -31,7 +31,7 @@ void setup() {
     if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
         uint32_t ads1220_data2 = ADS1220::readData();
     }  
-    //ADS1220::powerUpIdacs();
+    ADS1220::powerDown();
     Serial.println("ADS1220 Configured.");
 
     // 5. 初始化状态机
@@ -48,7 +48,7 @@ void setup() {
 void loop() {
     // 核心架构：主循环只负责快速、非阻塞地运行状态机
     // 1. 确保IDAC是开启的 (通过configure)
-    
+    /*
     ADS1220::reset();
     ADS1220::configure(); // IDAC设置为250uA
     Serial.println("ADS1220 configured. IDAC should be ON (250uA).");
@@ -62,10 +62,10 @@ void loop() {
     ADS1220::powerDown();
     Serial.println("POWERDOWN command sent. IDAC should be OFF now.");
     delay(5000); // 长时间观察IDAC关闭状态
-    
+    */
 
     
-    //runStateMachine(); 
+    runStateMachine(); 
 
     //delay(3000);
     /*
