@@ -35,8 +35,8 @@ void runStateMachine() {
                 newCycleFlag = false;
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, LOW);//调试时注意，目前为低状态
-                currentState = STATE_PULSE_LOW_STARTED; // 进入高电平脉冲状态
+                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为高状态
+                currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
                 //Serial.println("Pulse Start");
@@ -55,7 +55,7 @@ void runStateMachine() {
             break;
 
         case STATE_TRIGGER_AD7680:
-            // 触发AD7680转换 (仅拉低CS线)
+            // 触发AD7680转换
             //AD7680::triggerConversion();
             //Serial.println("CS");
             startADCFlag = true;
@@ -94,7 +94,7 @@ void runStateMachine() {
             }
             */
             ADS1220::reset();
-            ADS1220::configure(); // IDAC设置为250uA
+            ADS1220::configure(); // IDAC设置为250uA，控制电流输出250uA
             while(digitalRead(PIN_DRDY_ADS1220) ==HIGH){
             }
             if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
