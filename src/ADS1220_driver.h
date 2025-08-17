@@ -2,6 +2,7 @@
 #define ADS1220_DRIVER_H
 
 #include "config.h"
+#include <Arduino.h>
 
 namespace ADS1220 {
     void init();
@@ -9,9 +10,7 @@ namespace ADS1220 {
     void configure();
     void startConversion();
     uint32_t readData();
-    void powerDownIdacs();
     void powerDown();
-    void startsync();
 }
 
 #endif // ADS1220_DRIVER_H

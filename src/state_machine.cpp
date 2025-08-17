@@ -9,17 +9,13 @@ volatile SystemState currentState = STATE_IDLE;
 volatile bool newCycleFlag = false;
 volatile bool triggerAdcFlag = false;
 volatile bool endPulseFlag = false;
-volatile bool startADCFlag = false;
 volatile bool triggerAFEFlag = false;
-volatile bool endAFEFlag = false;
+volatile bool dataReadyAFE = false;
+volatile bool processDataFlag = false;
 
 // 存储采集数据的变量
 uint16_t ad7680_data = 0;
-uint16_t ads1220_data = 0;
-uint16_t ads1220_data2 = 0;
-
-// 用于AFE触发延时的计时器
-unsigned long lowPulseStartTime = 0;
+uint32_t ads1220_data = 0;
 
 void initState() {
     currentState = STATE_IDLE;
@@ -29,119 +25,47 @@ void initState() {
 void runStateMachine() {
     switch (currentState) {
         case STATE_IDLE:
-            // 等待主定时器中断设置 newCycleFlag
             if (newCycleFlag) {
-                noInterrupts(); // 进入临界区
                 newCycleFlag = false;
-                interrupts(); // 退出临界区
-                // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为高状态
-                currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
-                // 不再需要启动单次定时器，因为主定时器已在运行
-                // startOneShotTimers(); // <--- 此行已删除
-                //Serial.println("Pulse Start");
-
-            }
-            break;
-        
-        case STATE_PULSE_HIGH_STARTED:
-            // 等待主定时器中断在50us时设置 triggerAdcFlag
-            if (triggerAdcFlag) {
-                noInterrupts();
-                triggerAdcFlag = false;
-                interrupts();
-                currentState = STATE_TRIGGER_AD7680;
+                
+                // 启动高电平脉冲和AD7680转换
+                // GPIO操作已移至ISR，此处只需设置状态
+                AD7680::triggerConversion();
+                currentState = STATE_WAIT_AD7680;
             }
             break;
 
-        case STATE_TRIGGER_AD7680:
-            // 触发AD7680转换
-            //AD7680::triggerConversion();
-            //Serial.println("CS");
-            startADCFlag = true;
-            currentState = STATE_READ_AD7680;
+        case STATE_WAIT_AD7680:
+            // 等待高电平脉冲结束，此时AD7680转换也应完成
+            if (endPulseFlag) {
+                endPulseFlag = false;
+                currentState = STATE_READ_AD7680;
+            }
             break;
 
         case STATE_READ_AD7680:
-            // 在主循环中执行阻塞式SPI读取，避免在ISR中操作
-            if (startADCFlag) {
-                ad7680_data = AD7680::readDataMean(ad7680_data);
-                startADCFlag = false;
-                //Serial.println("AD7680::read");
-            }            
-/*          //打印ad7680_data          
-            Serial.println(ad7680_data); // 可选：调试输出 */
-            // 等待主定时器中断在125us时设置 endPulseFlag
-            if (endPulseFlag) {
-                noInterrupts();
-                endPulseFlag = false;
-                interrupts();                            
-               // 结束高电平脉冲
-                //Serial.println("Ending High Pulse");
-                digitalWrite(PIN_SWITCH_CTRL, LOW);
-                //lowPulseStartTime = millis(); // 记录低电平开始时间
-                //currentState = STATE_PULSE_LOW_STARTED;
-                currentState = STATE_PULSE_LOW_STARTED;
-            }
-            break; 
-        
-        
-        case STATE_PULSE_LOW_STARTED:
-            // 等待3.75ms的延时
-            /*
-            if (millis() - lowPulseStartTime >= (unsigned long)AFE_TRIGGER_DELAY_MS) {
-                currentState = STATE_TRIGGER_ADS1220;
-            }
-            */
-            ADS1220::reset();
-            ADS1220::configure(); // IDAC设置为250uA，控制电流输出250uA
-            while(digitalRead(PIN_DRDY_ADS1220) ==HIGH){
-            }
-            if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
-                ads1220_data2 = ADS1220::readData();
-            } 
-            //Serial.println("AD1220::read");
-            if (triggerAFEFlag) {
-                noInterrupts();
-                triggerAFEFlag = false;
-                interrupts();
-                currentState = STATE_TRIGGER_ADS1220;
-            }
+            ad7680_data = AD7680::readData();
+            
+            // 启动ADS1220转换
+            ADS1220::startConversion();
+            currentState = STATE_WAIT_ADS1220;
             break;
 
-        case STATE_TRIGGER_ADS1220:
-            //ADS1220::reset();
-            //ADS1220::startConversion();
-            //ADS1220::startsync();
-            //currentState = STATE_WAIT_ADS1220_READY;
-            startADCFlag = true;
-            currentState = STATE_READ_ADS1220;
-            //Serial.println("STATE_READ_ADS1220");
-            break;
-        /*
-        case STATE_WAIT_ADS1220_READY:
+        case STATE_WAIT_ADS1220:
             // 轮询DRDY引脚，等待数据就绪
             if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
+                dataReadyAFE = true;
                 currentState = STATE_READ_ADS1220;
-            } 
-            else if (millis() - lowPulseStartTime >= (unsigned long)AFE_LONGEST_DELAY_MS) {
-                // 超时处理
+            }
+            break;
+            
+        case STATE_READ_ADS1220:
+            if (dataReadyAFE) {
+                ads1220_data = ADS1220::readData();
+                dataReadyAFE = false;
+                ADS1220::powerDown();
                 currentState = STATE_PROCESS_DATA;
             }
-            // 可在此处添加超时逻辑
-            break;
-        */
-        case STATE_READ_ADS1220:
-            if (startADCFlag) {
-                ads1220_data = AD7680::readDataMean(ads1220_data);
-                startADCFlag = false;
-            } 
-            //ads1220_data = ADS1220::readData();
-            //ADS1220::reset();
-            ADS1220::powerDown(); // 测量后关闭IDAC
-            //Serial.println("AD1220end");
-            //ads1220_data按照24位adc计算实际电压值
-            currentState = STATE_PROCESS_DATA;
             break;
         
         case STATE_PROCESS_DATA:
@@ -149,12 +73,6 @@ void runStateMachine() {
             addDataToBuffer(ad7680_data, ads1220_data);
             // 检查缓冲区是否已满并发送
             sendBufferIfFull();
-            //Serial.println("Final");
-/*             addDataToBufferSingle(ads1220_data);
-            // 检查缓冲区是否已满并发送
-            sendBufferIfFullSingle(); */
-            //addDataToBuffer(ad7680_data, ads1220_data);
-            //double ads1220_datareal2=0;
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;
     }
