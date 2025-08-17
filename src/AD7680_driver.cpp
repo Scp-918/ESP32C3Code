@@ -4,7 +4,7 @@
 namespace AD7680 {
 
     // AD7680 SPI设置
-    SPISettings spiSettings(2000000, MSBFIRST, SPI_MODE0);
+    SPISettings spiSettings(2500000, MSBFIRST, SPI_MODE0);
 
     void init() {
         pinMode(PIN_CS_AD7680, OUTPUT);
@@ -109,8 +109,98 @@ namespace AD7680 {
             // --- 步骤 2: 剔除离群值并计算最终平均值 ---
 
             // 定义有效数据范围
-            float lower_bound = mean - 2 * std_dev;
-            float upper_bound = mean + 2 * std_dev;
+            float lower_bound = mean - 3 * std_dev;
+            float upper_bound = mean + 3 * std_dev;
+
+            uint32_t final_sum = 0;
+            uint8_t final_count = 0;
+
+            // 第二次遍历，只累加在范围内的"正常值"
+            for (int i = 0; i < j; i++) {
+                if (resultall[i] >= lower_bound && resultall[i] <= upper_bound) {
+                    final_sum += resultall[i];
+                    final_count++;
+                }
+            }
+
+            // 计算最终平均值
+            if (final_count > 0) {
+                result = static_cast<uint16_t>(round(static_cast<float>(final_sum) / final_count));
+            } else {
+                // 备用逻辑: 如果所有值都被视为离群值，则返回原始平均值
+                result = ad7680_data;
+            }
+        }
+
+        //Serial.println("adc");
+        return result;
+        
+    }
+
+    uint16_t readDataMeanMore(uint16_t ad7680_data) {
+        uint8_t byte1 = 0;
+        uint8_t byte2 = 0;
+        uint8_t byte3 = 0;
+        uint8_t j = 6;
+        uint16_t resultall[j] = {0};
+        uint32_t raw_data = 0;
+
+        for (int i=0;i<j;i++)
+        {
+            digitalWrite(PIN_CS_AD7680, LOW);
+            SPI.beginTransaction(spiSettings);    
+            // 读取3个字节（24位）但只处理前20位有效数据
+            byte1 = SPI.transfer(0x00);  // 第1个字节：4个前置0 + 前4位ADC数据
+            byte2 = SPI.transfer(0x00);  // 第2个字节：中间8位ADC数据
+            byte3 = SPI.transfer(0x00);  // 第3个字节：后4位ADC数据 + 4位无关数据
+            SPI.endTransaction();
+            digitalWrite(PIN_CS_AD7680, HIGH); // 结束通信
+            
+            // 组合并提取20位有效数据（忽略最后4位）
+            raw_data = ((uint32_t)byte1 << 16) | ((uint32_t)byte2 << 8) | byte3;            
+            // 右移4位去掉前置0，得到16位ADC数据
+            resultall[i] = (raw_data >> 4) & 0xFFFF;
+        }
+
+        uint16_t result = 0;
+
+        // 当样本数过少时(小于等于2)，统计方法无意义，直接求平均
+        if (j <= 2) {
+            uint32_t temp_sum = 0;
+            if (j > 0) {
+                for (int i = 0; i < j; i++) {
+                    temp_sum += resultall[i];
+                }
+                result = temp_sum / j;
+            } else {
+                result = 0;
+            }
+        } else {
+            // --- 步骤 1: 计算所有原始数据的平均值和标准差 ---
+
+            // 计算总和
+            uint32_t sum_all = 0;
+            for (int i = 0; i < j; i++) {
+                sum_all += resultall[i];
+            }
+
+            // 计算平均值 (μ)
+            float mean = static_cast<float>(sum_all) / j;
+
+            // 计算方差的累加和 (Sum of Squared Differences)
+            float sum_sq_diff = 0;
+            for (int i = 0; i < j; i++) {
+                sum_sq_diff += pow(static_cast<float>(resultall[i]) - mean, 2);
+            }
+
+            // 计算标准差 (σ, Population Standard Deviation)
+            float std_dev = sqrt(sum_sq_diff / j);
+
+            // --- 步骤 2: 剔除离群值并计算最终平均值 ---
+
+            // 定义有效数据范围
+            float lower_bound = mean - 3 * std_dev;
+            float upper_bound = mean + 3 * std_dev;
 
             uint32_t final_sum = 0;
             uint8_t final_count = 0;

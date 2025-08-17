@@ -17,8 +17,8 @@
 
 // --- 时序控制 (Timing Control) ---
 #define PULSE_FREQUENCY 100       // 脉冲频率 (Hz)
-#define HIGH_PULSE_WIDTH_US 200   // 高电平脉冲宽度 (µs)
-#define ADC_TRIGGER_TIME_US 75    // AD7680 触发时间 (µs)
+#define HIGH_PULSE_WIDTH_US 1000   // 高电平脉冲宽度 (µs)
+#define ADC_TRIGGER_TIME_US 100    // AD7680 触发时间 (µs)
 #define AFE_TRIGGER_DELAY_MS 2 // ADS1220 在低电平开始后的触发延迟 (ms)
 #define AFE_LONGEST_DELAY_MS 9 // ADS1220 最长延迟 (ms)
 

@@ -34,7 +34,7 @@ namespace ADS1220 {
         uint8_t config_reg1 = 0x90; // DR=1000SPS (110), Normal Mode00, Continuous conversion mode 0,00A1 90
 
         // 3. IDAC电流初始化为0A
-        uint8_t config_reg2 = 0x45; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
+        uint8_t config_reg2 = 0x44; // VREF=External(REFP0/N0)01, 50/60Hz Rej 00, 0,IDAC=250uA (100)/0 000
         
         uint8_t config_reg3 = 0x80; // I1MUX=AIN3 100, I2MUX=Disabled 000, DRDY only 0,0
         SPI.beginTransaction(spiSettings2);

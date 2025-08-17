@@ -35,8 +35,8 @@ void runStateMachine() {
                 newCycleFlag = false;
                 interrupts(); // 退出临界区
                 // 启动高电平脉冲
-                digitalWrite(PIN_SWITCH_CTRL, HIGH);//调试时注意，目前为低状态
-                currentState = STATE_PULSE_HIGH_STARTED; // 进入高电平脉冲状态
+                digitalWrite(PIN_SWITCH_CTRL, LOW);//调试时注意，目前为低状态
+                currentState = STATE_PULSE_LOW_STARTED; // 进入高电平脉冲状态
                 // 不再需要启动单次定时器，因为主定时器已在运行
                 // startOneShotTimers(); // <--- 此行已删除
                 //Serial.println("Pulse Start");
@@ -80,6 +80,7 @@ void runStateMachine() {
                 //Serial.println("Ending High Pulse");
                 digitalWrite(PIN_SWITCH_CTRL, LOW);
                 //lowPulseStartTime = millis(); // 记录低电平开始时间
+                //currentState = STATE_PULSE_LOW_STARTED;
                 currentState = STATE_PULSE_LOW_STARTED;
             }
             break; 

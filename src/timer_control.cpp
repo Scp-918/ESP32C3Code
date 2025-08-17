@@ -9,7 +9,7 @@ hw_timer_t *masterTimer = NULL;
 volatile int timer_counter = 0;
 
 // 定义事件触发的计数值
-const int ADC_TRIGGER_COUNT = ADC_TRIGGER_TIME_US/25;   // 2 * 25us = 50us
+const int ADC_TRIGGER_COUNT = HIGH_PULSE_WIDTH_US/25-5;   // 2 * 25us = 50us
 const int PULSE_END_COUNT = HIGH_PULSE_WIDTH_US/25;     // 5 * 25us = 125us
 const int CYCLE_END_COUNT = 1000000/PULSE_FREQUENCY/25;   // 250 * 25us = 6250us = 6.25ms (160 Hz)1000000/PULSE_FREQUENCY/25
 const int AFE_TRIGGER_COUNT = 1000000/PULSE_FREQUENCY/25-PULSE_END_COUNT-20;     // 5 * 25us = 125us
@@ -31,7 +31,7 @@ void IRAM_ATTR onMasterTimer() {
         endPulseFlag = true;
     } else if (timer_counter == AFE_TRIGGER_COUNT) {
         triggerAFEFlag = true;
-    } else if (timer_counter == PULSE_END_COUNT) {
+    } else if (timer_counter == AFE_END_COUNT) {
         endAFEFlag = true;
     }
 
