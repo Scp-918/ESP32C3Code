@@ -23,11 +23,6 @@ void initState() {
     currentState = STATE_IDLE;
 }
 
-// 处理缓冲区发送，在主循环中调用，不会阻塞状态机
-void handleCommunication() {
-    sendBufferIfFull();
-}
-
 // 主状态机，由loop()函数持续调用
 void runStateMachine() {
     switch (currentState) {
@@ -135,6 +130,9 @@ void runStateMachine() {
         case STATE_PROCESS_DATA:
             // 封装数据并放入缓冲区
             addDataToBuffer(ad7680_data, ad1220_data); // 使用第一个样本作为示例
+            
+            // 检查缓冲区是否已满并发送
+            sendBufferIfFull(); 
             
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;
