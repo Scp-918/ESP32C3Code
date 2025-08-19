@@ -13,14 +13,35 @@
 #define FRAME_FOOTER1 0xCC
 #define FRAME_HEADER2 0xBB
 #define FRAME_FOOTER2 0xDD
-#define COMM_BUFFER_FRAME_COUNT 5 // 每16帧打包发送一次
+#define COMM_BUFFER_FRAME_COUNT 16 // 每16帧打包发送一次
 
 // --- 时序控制 (Timing Control) ---
-#define PULSE_FREQUENCY 100       // 脉冲频率 (Hz)
-#define HIGH_PULSE_WIDTH_US 200   // 高电平脉冲宽度 (µs)
-#define ADC_TRIGGER_TIME_US 100    // AD7680 触发时间 (µs)
-#define AFE_TRIGGER_DELAY_MS 2 // ADS1220 在低电平开始后的触发延迟 (ms)
-#define AFE_LONGEST_DELAY_MS 9 // ADS1220 最长延迟 (ms)
+#define PULSE_FREQUENCY_HZ 100              // 脉冲频率 (Hz)
+#define HIGH_PULSE_DUTY_CYCLE_PERCENT 2     // 高电平占空比 (%)
+
+// ADC转换和SPI通信时序
+#define AD7680_CONVERSION_TIME_US 100       // AD7680多次转换+取平均所需时间 (µs)
+#define ADS1220_START_TIME_US 1000            // ADS1220需要持续的时间 (µs)
+#define ADS1220_CONVERSION_TIME_US 500      // ADS1220多次转换+取平均所需时间 (µs)
+#define AFE_TRIGGER_DELAY_US 500            // ADS1220在低电平开始后的触发延迟 (µs)
+
+// 由频率和占空比计算得到
+#define TOTAL_CYCLE_TIME_US (1000000 / PULSE_FREQUENCY_HZ)
+//#define HIGH_PULSE_WIDTH_US (TOTAL_CYCLE_TIME_US * HIGH_PULSE_DUTY_CYCLE_PERCENT / 100)
+#define HIGH_PULSE_WIDTH_US 1000
+#define LOW_PULSE_WIDTH_US (TOTAL_CYCLE_TIME_US - HIGH_PULSE_WIDTH_US)
+
+// --- 定时器中断计数 (基于25us中断周期) ---
+#define TIMER_TICK_US 25
+#define CYCLE_END_COUNT (TOTAL_CYCLE_TIME_US / TIMER_TICK_US)
+#define PULSE_END_COUNT (HIGH_PULSE_WIDTH_US / TIMER_TICK_US)
+#define ADC_TRIGGER_COUNT ((HIGH_PULSE_WIDTH_US - AD7680_CONVERSION_TIME_US) / TIMER_TICK_US)
+#define AFE_START_COUNT ((TOTAL_CYCLE_TIME_US - ADS1220_START_TIME_US) / TIMER_TICK_US)
+#define AFE_TRIGGER_COUNT (AFE_START_COUNT + 10)
+#define AFE_END_COUNT (CYCLE_END_COUNT-20)
+
+// AD7680平均值计数
+#define AD7680_AVERAGE_COUNT 6
 
 // =================================================================
 // == 引脚定义 (Pin Definitions)
