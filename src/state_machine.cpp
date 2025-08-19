@@ -23,29 +23,43 @@ void initState() {
     currentState = STATE_IDLE;
 }
 
+// 处理缓冲区发送，在主循环中调用，不会阻塞状态机
+void handleCommunication() {
+    sendBufferIfFull();
+}
+
 // 主状态机，由loop()函数持续调用
 void runStateMachine() {
     switch (currentState) {
         case STATE_IDLE:
             if (newCycleFlag) {
+                noInterrupts();
                 newCycleFlag = false;
+                interrupts();
                 //ad7680_sample_count = 0;
-                currentState = STATE_READ_AD7680_DATA;
                 digitalWrite(18, HIGH);
+                currentState = STATE_READ_AD7680_DATA;
+                
             }
             break;
 
 
         case STATE_READ_AD7680_DATA:
             if (triggerAdcFlag) {
+                noInterrupts();
                 triggerAdcFlag = false;
+                interrupts();
                 //ad7680_data = AD7680::readDataMean(ad7680_data);
                 //ad7680_data = AD7680::readData();                
             }
             if (endPulseFlag) {
+                //短时屏蔽中断
+                noInterrupts();
                 endPulseFlag = false;
-                currentState = STATE_SET_IDAC;
+                interrupts();
                 digitalWrite(18, LOW);
+                currentState = STATE_SET_IDAC;
+                
             }
             
             break;
@@ -74,7 +88,9 @@ void runStateMachine() {
             
             
             if (idacAFEFlag) {
+                noInterrupts();
                 idacAFEFlag = false;
+                interrupts();
                 //digitalWrite(PIN_SWITCH_CTRL, HIGH);
                 digitalWrite(18, HIGH);
                 Serial.println("IDAC");
@@ -104,7 +120,9 @@ void runStateMachine() {
             
            
             if (triggerAFEFlag) {
+                noInterrupts();
                 triggerAFEFlag = false;
+                interrupts();
                 //ad1220_data = AD7680::readDataMean(ad1220_data);
                 //digitalWrite(PIN_SWITCH_CTRL, LOW);
                 digitalWrite(18, LOW);
@@ -117,9 +135,6 @@ void runStateMachine() {
         case STATE_PROCESS_DATA:
             // 封装数据并放入缓冲区
             addDataToBuffer(ad7680_data, ad1220_data); // 使用第一个样本作为示例
-            
-            // 检查缓冲区是否已满并发送
-            sendBufferIfFull(); 
             
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;

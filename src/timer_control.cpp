@@ -18,10 +18,10 @@ void IRAM_ATTR onMasterTimer() {
     // 在周期的开始 (t=0)，开始高电平脉冲
     if (timer_counter == 0) {
         // 确保下一个周期可以开始
+        GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL);
         newCycleFlag = true;
         // 拉高IO引脚，开始高电平脉冲
         //GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL);
-        GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL);
     }
 
     // 在指定时间点触发AD7680转换
@@ -39,8 +39,8 @@ void IRAM_ATTR onMasterTimer() {
     //开始AFE电流输出
     if (timer_counter == AFE_START_COUNT) {
         // 电流源AD1220标志位
-        idacAFEFlag = true;
         GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL);
+        idacAFEFlag = true;
     }
 
     // 在指定时间点触发AD7680转换
@@ -50,8 +50,8 @@ void IRAM_ATTR onMasterTimer() {
 
     // 最晚转换结束时间
     if (timer_counter == AFE_END_COUNT) {
-        endAFEFlag = true;
         GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL);
+        endAFEFlag = true;
     }
 
     // 计数器递增
