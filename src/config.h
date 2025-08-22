@@ -8,12 +8,12 @@
 // =================================================================
 
 // --- 通信设置 (Communication Settings) ---
-#define SERIAL_BAUD_RATE 115200
+#define SERIAL_BAUD_RATE 460800
 #define FRAME_HEADER1 0xAA
 #define FRAME_FOOTER1 0xCC
 #define FRAME_HEADER2 0xBB
 #define FRAME_FOOTER2 0xDD
-#define COMM_BUFFER_FRAME_COUNT 16 // 每16帧打包发送一次
+#define COMM_BUFFER_FRAME_COUNT 10 // 每10帧打包发送一次
 
 // --- 时序控制 (Timing Control) ---
 #define PULSE_FREQUENCY_HZ 100              // 脉冲频率 (Hz)
@@ -65,5 +65,7 @@
 // 高电平: 惠斯通电桥 (AD7680)
 // 低电平: 比例式电桥 (ADS1220)
 #define PIN_SWITCH_CTRL 12
+
+#define PIN_SWITCH_CTRL2 18
 
 #endif // CONFIG_H

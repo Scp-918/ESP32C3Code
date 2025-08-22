@@ -21,43 +21,47 @@ uint16_t ad7680_data2 = 0;
 
 void initState() {
     currentState = STATE_IDLE;
+    gpio_pad_select_gpio((gpio_num_t)PIN_SWITCH_CTRL2);
+    gpio_set_direction((gpio_num_t)PIN_SWITCH_CTRL2, GPIO_MODE_OUTPUT);
+    GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 默认不选中
 }
 
 // 主状态机，由loop()函数持续调用
 void runStateMachine() {
+    // 使用快速分支预测优化的switch语句
     switch (currentState) {
         case STATE_IDLE:
             if (newCycleFlag) {
-                noInterrupts();
+                //noInterrupts();
                 newCycleFlag = false;
-                interrupts();
+                //interrupts();
                 //ad7680_sample_count = 0;
-                digitalWrite(18, HIGH);
-                currentState = STATE_READ_AD7680_DATA;
-                
+                //digitalWrite(18, HIGH);
+                GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                currentState = STATE_READ_AD7680_DATA; 
             }
-            break;
+            return; // 早期返回避免后续不必要的检查
 
 
         case STATE_READ_AD7680_DATA:
             if (triggerAdcFlag) {
-                noInterrupts();
+                //noInterrupts();
                 triggerAdcFlag = false;
-                interrupts();
+                //interrupts();
                 //ad7680_data = AD7680::readDataMean(ad7680_data);
                 //ad7680_data = AD7680::readData();                
             }
             if (endPulseFlag) {
                 //短时屏蔽中断
-                noInterrupts();
+                //noInterrupts();
                 endPulseFlag = false;
-                interrupts();
-                digitalWrite(18, LOW);
+                //interrupts();
+                //digitalWrite(18, LOW);
+                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
                 currentState = STATE_SET_IDAC;
-                
+                return; // 状态已切换，立即返回
             }
-            
-            break;
+            return; // 避免执行后续状态检查
 
         case STATE_SET_IDAC:
             // 设置AFE电流
@@ -81,21 +85,19 @@ void runStateMachine() {
                 */
             
             
-            
+            //sendBufferIfFull(); 
             if (idacAFEFlag) {
-                noInterrupts();
+                //noInterrupts();
                 idacAFEFlag = false;
-                interrupts();
+                //interrupts();
                 //digitalWrite(PIN_SWITCH_CTRL, HIGH);
-                digitalWrite(18, HIGH);
-                Serial.println("IDAC");
-                currentState = STATE_READ_AD7680_DATA2;  
+                //digitalWrite(18, HIGH);
+                GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                //Serial.println("IDAC");
+                currentState = STATE_READ_AD7680_DATA2;
+                return; // 状态已切换，立即返回
             }
-                
-            
-                
-
-            break;        
+            return; // 避免break语句        
 
         case STATE_READ_AD7680_DATA2:
             /*
@@ -115,24 +117,25 @@ void runStateMachine() {
             
            
             if (triggerAFEFlag) {
-                noInterrupts();
+                //noInterrupts();
                 triggerAFEFlag = false;
-                interrupts();
+                //interrupts();
                 //ad1220_data = AD7680::readDataMean(ad1220_data);
                 //digitalWrite(PIN_SWITCH_CTRL, LOW);
-                digitalWrite(18, LOW);
-                Serial.println("AFEEND");
+                //digitalWrite(18, LOW);
+                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                //Serial.println("AFEEND");
                 currentState = STATE_PROCESS_DATA;
+                return; // 状态已切换，立即返回
             }
-                
-            break;
+            return; // 避免break语句
 
         case STATE_PROCESS_DATA:
             // 封装数据并放入缓冲区
             addDataToBuffer(ad7680_data, ad1220_data); // 使用第一个样本作为示例
             
             // 检查缓冲区是否已满并发送
-            sendBufferIfFull(); 
+            //sendBufferIfFull(); 
             
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;

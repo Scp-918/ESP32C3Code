@@ -45,12 +45,12 @@ void IRAM_ATTR onMasterTimer() {
 
     // 在指定时间点触发AD7680转换
     if (timer_counter == AFE_TRIGGER_COUNT) {
+        GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL);
         triggerAFEFlag = true;
     }
 
     // 最晚转换结束时间
     if (timer_counter == AFE_END_COUNT) {
-        GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL);
         endAFEFlag = true;
     }
 

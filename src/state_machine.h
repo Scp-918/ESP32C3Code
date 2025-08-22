@@ -29,7 +29,6 @@ extern uint16_t ad7680_data2;
 
 // 声明状态机初始化和运行函数
 void initState();
-void handleCommunication();  // 新增函数声明，用于在主循环中处理通信
 void runStateMachine();
 
 #endif // STATE_MACHINE_H
