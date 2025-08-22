@@ -6,13 +6,7 @@
 
 // 定义全局状态变量
 volatile SystemState currentState = STATE_IDLE;
-volatile bool newCycleFlag = false;
-volatile bool triggerAdcFlag = false;
-volatile bool endPulseFlag = false;
-volatile bool idacAFEFlag = false;
-volatile bool triggerAFEFlag = false;
-volatile bool endAFEFlag = false;
-volatile int ads1220_read_count = 0;
+volatile uint32_t eventFlags = 0; // 初始化事件标志为0
 
 // 存储采集数据的变量
 uint16_t ad7680_data = 0;
@@ -28,13 +22,22 @@ void initState() {
 
 // 主状态机，由loop()函数持续调用
 void runStateMachine() {
+    // 使用本地变量保存并清除事件标志，防止在处理过程中被ISR修改
+    // 禁用中断以确保原子性，处理完成后立即恢复
+    /*
+    noInterrupts();
+    uint32_t currentEvents = eventFlags;
+    eventFlags = 0;
+    interrupts();
+    */
+
     // 使用快速分支预测优化的switch语句
     switch (currentState) {
         case STATE_IDLE:
-            if (newCycleFlag) {
-                //noInterrupts();
-                newCycleFlag = false;
-                //interrupts();
+            if (eventFlags & EVENT_NEW_CYCLE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_NEW_CYCLE; // 清除标志位
+                interrupts();
                 //ad7680_sample_count = 0;
                 //digitalWrite(18, HIGH);
                 GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
@@ -44,18 +47,18 @@ void runStateMachine() {
 
 
         case STATE_READ_AD7680_DATA:
-            if (triggerAdcFlag) {
-                //noInterrupts();
-                triggerAdcFlag = false;
-                //interrupts();
+            if (eventFlags & EVENT_TRIGGER_ADC) {
+                noInterrupts();
+                eventFlags &= ~EVENT_TRIGGER_ADC;
+                interrupts();
                 //ad7680_data = AD7680::readDataMean(ad7680_data);
                 //ad7680_data = AD7680::readData();                
             }
-            if (endPulseFlag) {
+            if (eventFlags & EVENT_END_PULSE) {
                 //短时屏蔽中断
-                //noInterrupts();
-                endPulseFlag = false;
-                //interrupts();
+                noInterrupts();
+                eventFlags &= ~EVENT_END_PULSE;
+                interrupts();
                 //digitalWrite(18, LOW);
                 GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
                 currentState = STATE_SET_IDAC;
@@ -86,10 +89,10 @@ void runStateMachine() {
             
             
             //sendBufferIfFull(); 
-            if (idacAFEFlag) {
-                //noInterrupts();
-                idacAFEFlag = false;
-                //interrupts();
+            if (eventFlags & EVENT_IDAC_AFE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_IDAC_AFE;
+                interrupts();
                 //digitalWrite(PIN_SWITCH_CTRL, HIGH);
                 //digitalWrite(18, HIGH);
                 GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
@@ -116,10 +119,10 @@ void runStateMachine() {
                 */
             
            
-            if (triggerAFEFlag) {
-                //noInterrupts();
-                triggerAFEFlag = false;
-                //interrupts();
+            if (eventFlags & EVENT_TRIGGER_AFE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_TRIGGER_AFE;
+                interrupts();
                 //ad1220_data = AD7680::readDataMean(ad1220_data);
                 //digitalWrite(PIN_SWITCH_CTRL, LOW);
                 //digitalWrite(18, LOW);
@@ -135,7 +138,7 @@ void runStateMachine() {
             addDataToBuffer(ad7680_data, ad1220_data); // 使用第一个样本作为示例
             
             // 检查缓冲区是否已满并发送
-            //sendBufferIfFull(); 
+            sendBufferIfFull(); 
             
             currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
             break;

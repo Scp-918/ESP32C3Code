@@ -12,15 +12,17 @@ typedef enum {
     STATE_PROCESS_DATA
 } SystemState;
 
-// 声明全局状态变量 (volatile关键字用于确保在ISR和主循环间安全访问)
+// 使用位掩码定义事件标志
+#define EVENT_NEW_CYCLE          (1 << 0) // 新周期开始
+#define EVENT_TRIGGER_ADC        (1 << 1) // 触发AD7680转换
+#define EVENT_END_PULSE          (1 << 2) // 高电平脉冲结束
+#define EVENT_IDAC_AFE           (1 << 3) // 开始AFE电流输出
+#define EVENT_TRIGGER_AFE        (1 << 4) // 触发AFE转换
+#define EVENT_END_AFE            (1 << 5) // AFE转换结束
+
+// 声明全局状态变量和事件标志
 extern volatile SystemState currentState;
-extern volatile bool newCycleFlag;
-extern volatile bool triggerAdcFlag;
-extern volatile bool endPulseFlag;
-extern volatile bool idacAFEFlag;
-extern volatile bool triggerAFEFlag;
-extern volatile bool endAFEFlag;
-extern volatile int ads1220_read_count;
+extern volatile uint32_t eventFlags; // 新的事件标志变量
 
 // 声明数据变量
 extern uint16_t ad7680_data;
