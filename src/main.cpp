@@ -45,6 +45,7 @@ void setup() {
     ADS1220::powerDown();
     Serial.println("ADS1220 Configured.");
 
+    /*
     // 5. 创建高优先级任务来运行状态机
     xTaskCreatePinnedToCore(
         stateMachineTask,   // 任务函数
@@ -56,6 +57,7 @@ void setup() {
         0 // 运行在核心0
     );
     Serial.println("State Machine Task created.");
+    */
 
     // 6. 初始化并启动定时器，它会触发状态机任务
     initTimers();
@@ -81,5 +83,6 @@ void loop() {
     Serial.println(AFE_END_COUNT);
     delay(1000);
     */
-    vTaskDelay(1000); // 无限延迟，不执行任何操作
+    //vTaskDelay(1000); // 无限延迟，不执行任何操作
+    runStateMachine();
 }

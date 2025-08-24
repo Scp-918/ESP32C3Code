@@ -134,4 +134,84 @@ void runStateMachine() {
     */
 
     // ... 原始switch语句 ...
+            // 使用快速分支预测优化的switch语句
+    switch (currentState) {
+        case STATE_IDLE:
+            if (eventFlags & EVENT_NEW_CYCLE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_NEW_CYCLE; // 清除标志位
+                interrupts();                    
+                //ad7680_sample_count = 0;
+                //digitalWrite(18, HIGH);
+                GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                currentState = STATE_READ_AD7680_DATA;
+            }
+            break; // 使用break而不是return
+
+        case STATE_READ_AD7680_DATA:
+            if (eventFlags & EVENT_TRIGGER_ADC) {
+                noInterrupts();
+                eventFlags &= ~EVENT_TRIGGER_ADC; // 清除标志位
+                interrupts();
+                //ad7680_data = AD7680::readDataMean(ad7680_data);
+                //ad7680_data = AD7680::readData();
+            }
+            if (eventFlags & EVENT_END_PULSE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_END_PULSE; // 清除标志位
+                interrupts();
+                //短时屏蔽中断
+                //digitalWrite(18, LOW);
+                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                currentState = STATE_SET_IDAC;
+            }
+            break;
+
+        case STATE_SET_IDAC:
+            if (eventFlags & EVENT_IDAC_AFE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_IDAC_AFE; // 清除标志位
+                interrupts();
+                //digitalWrite(PIN_SWITCH_CTRL, HIGH);
+                //digitalWrite(18, HIGH);
+                GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                //Serial.println("IDAC");
+                currentState = STATE_READ_AD7680_DATA2;
+            }
+            break;
+
+        case STATE_READ_AD7680_DATA2:
+            if (eventFlags & EVENT_TRIGGER_AFE) {
+                noInterrupts();
+                eventFlags &= ~EVENT_TRIGGER_AFE; // 清除标志位
+                interrupts();
+                //ad1220_data = ADS1220::readData();
+                //digitalWrite(PIN_SWITCH_CTRL, LOW);
+                //digitalWrite(18, LOW);
+                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                //Serial.println("AFEEND");
+                currentState = STATE_PROCESS_DATA;
+            }
+            break;
+
+        case STATE_PROCESS_DATA:
+            // 封装数据并直接通过DMA发送
+            DataFrame frame;
+            frame.header1 = FRAME_HEADER1;
+            frame.header2 = FRAME_HEADER2;
+            frame.adc_datahigh = (ad7680_data >> 8) & 0xFF;
+            frame.adc_datalow = ad7680_data & 0xFF;
+            frame.afe_datahigh = 0x00;
+            frame.afe_datamedium = (ad1220_data >> 8) & 0xFF;
+            frame.afe_datalow = ad1220_data & 0xFF;
+            frame.checksum = frame.adc_datahigh ^ frame.adc_datalow ^ frame.afe_datahigh ^ frame.afe_datamedium ^ frame.afe_datalow;
+            frame.footer1 = FRAME_FOOTER1;
+            frame.footer2 = FRAME_FOOTER2;
+            
+            // 将数据发送给通信函数，该函数会将其推入DMA缓冲区
+            //sendDataFrame(&frame);
+
+            currentState = STATE_IDLE; // 回到空闲状态，等待下一个周期
+            break;
+    }
 }
