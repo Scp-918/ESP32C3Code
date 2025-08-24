@@ -6,6 +6,11 @@
 #include "communication.h"
 #include <SPI.h>
 #include "driver/gpio.h"
+#include "freertos/FreeRTOS.h" // 引入FreeRTOS库
+#include "freertos/task.h"     // 引入任务相关头文件
+
+// 声明状态机任务句柄
+TaskHandle_t StateMachineTaskHandle = NULL;
 
 void setup() {
 
@@ -36,24 +41,31 @@ void setup() {
     delay(100); // 等待初始化读出数据
     if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
         uint32_t ads1220_data2 = ADS1220::readData();
-    }  
+    }
     ADS1220::powerDown();
-    Serial.println("ADS1220 Configured.");    
+    Serial.println("ADS1220 Configured.");
 
-    // 5. 初始化状态机
-    initState();
-    Serial.println("State Machine Initialized.");
+    // 5. 创建高优先级任务来运行状态机
+    xTaskCreatePinnedToCore(
+        stateMachineTask,   // 任务函数
+        "StateMachineTask", // 任务名称
+        4096,               // 堆栈大小 (根据需要调整)
+        NULL,               // 任务参数
+        20,                 // 任务优先级 (高于默认的1，确保高实时性)
+        &StateMachineTaskHandle, // 任务句柄
+        0 // 运行在核心0
+    );
+    Serial.println("State Machine Task created.");
 
-    // 6. 初始化并启动定时器
+    // 6. 初始化并启动定时器，它会触发状态机任务
     initTimers();
     //Serial.println("Timers Initialized and Started. System is running.");
     //delay(2000);
 }
 
 void loop() {
-    // 核心架构：主循环只负责快速、非阻塞地运行状态机
-    runStateMachine(); 
-    /* 
+    // 核心架构：主循环现在是空的，所有逻辑都在独立的FreeRTOS任务中执行
+    /*
     float start = micros();
     //unsigned long duration = millis() - start; // 单位：毫秒
     digitalWrite(18, !digitalRead(18)); // 电平翻转
@@ -69,4 +81,5 @@ void loop() {
     Serial.println(AFE_END_COUNT);
     delay(1000);
     */
+    vTaskDelay(1000); // 无限延迟，不执行任何操作
 }

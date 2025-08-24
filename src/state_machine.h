@@ -2,6 +2,7 @@
 #define STATE_MACHINE_H
 
 #include "config.h"
+#include "communication.h" // 引用DataFrame
 
 // 定义系统运行的各个状态
 typedef enum {
@@ -31,6 +32,9 @@ extern uint16_t ad7680_data2;
 
 // 声明状态机初始化和运行函数
 void initState();
+// 状态机函数被修改为一个任务函数
+void stateMachineTask(void *parameter);
+// 原有的 runStateMachine() 函数不再使用，但为了保留注释，此处保留
 void runStateMachine();
 
 #endif // STATE_MACHINE_H
