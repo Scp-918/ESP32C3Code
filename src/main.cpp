@@ -88,18 +88,19 @@ void loop() {
     delay(1000);
     */
     //vTaskDelay(1000); // 无限延迟，不执行任何操作
-    //runStateMachine();
+    runStateMachine();
     
     //ADS1220::reset();
-    ADS1220::configureIDAC();
+    /*
+    ADS1220::startConversion();
     delay(100); // 等待初始化读出数据
     if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
         uint32_t ads1220_data3 = ADS1220::readData();
     }
-    delay(1000);
+    delay(3000);
     ADS1220::powerDown();
-    delay(1000);
-    
+    delay(3000);
+    */
     /*
     digitalWrite(PIN_SWITCH_CTRL, LOW);
     delay(1000);

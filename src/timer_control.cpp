@@ -51,12 +51,14 @@ void IRAM_ATTR onMasterTimer() {
         GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2);
         //ADS1220::reset();
         //ADS1220::configure();
+        ADS1220::startConversion();
         eventFlags |= EVENT_IDAC_AFE;
     }
 
     // 在指定时间点触发AD7680转换
     if (timer_counter == AFE_TRIGGER_COUNT) {
         GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2);
+        ADS1220::powerDown();
         eventFlags |= EVENT_TRIGGER_AFE;
     }
 

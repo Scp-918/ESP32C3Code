@@ -168,7 +168,8 @@ void runStateMachine() {
                 //短时屏蔽中断
                 //digitalWrite(18, LOW);
                 GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL); // 不选中
-                currentState = STATE_SET_IDAC;
+                //currentState = STATE_SET_IDAC;
+                currentState = STATE_PROCESS_DATA;
             }
             break;
 
@@ -177,8 +178,8 @@ void runStateMachine() {
                 noInterrupts();
                 eventFlags &= ~EVENT_IDAC_AFE; // 清除标志位
                 interrupts();
-                ADS1220::reset();
-                ADS1220::configure();
+                //ADS1220::reset();
+                //ADS1220::startConversion();
                 //digitalWrite(PIN_SWITCH_CTRL, HIGH);
                 //digitalWrite(18, HIGH);
                 //GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中

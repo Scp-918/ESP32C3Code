@@ -33,7 +33,7 @@ namespace ADS1220 {
         // 1. PGA增益更改为 (4x)
         uint8_t config_reg0 = 0x65; // MUX=AIN0/AIN1 0000, Gain=4(010), PGA disabled 165
         
-        // 2. 数据速率更改为1000 SPS以满足160Hz时序要求
+        // 2. 数据速率更改为1000 SPS以满足160Hz时序要求,连续采样
         uint8_t config_reg1 = 0xA0;
         
         // 3. IDAC电流初始化为250uA
