@@ -48,7 +48,7 @@ void stateMachineTask(void *parameter) {
                     interrupts();                    
                     //ad7680_sample_count = 0;
                     //digitalWrite(18, HIGH);
-                    GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                    GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL); // 选中
                     currentState = STATE_READ_AD7680_DATA;
                 }
                 break; // 使用break而不是return
@@ -67,7 +67,7 @@ void stateMachineTask(void *parameter) {
                     interrupts();
                     //短时屏蔽中断
                     //digitalWrite(18, LOW);
-                    GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                    GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL); // 不选中
                     currentState = STATE_SET_IDAC;
                 }
                 break;
@@ -79,7 +79,7 @@ void stateMachineTask(void *parameter) {
                     interrupts();
                     //digitalWrite(PIN_SWITCH_CTRL, HIGH);
                     //digitalWrite(18, HIGH);
-                    GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                    GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL); // 选中
                     //Serial.println("IDAC");
                     currentState = STATE_READ_AD7680_DATA2;
                 }
@@ -93,7 +93,7 @@ void stateMachineTask(void *parameter) {
                     //ad1220_data = ADS1220::readData();
                     //digitalWrite(PIN_SWITCH_CTRL, LOW);
                     //digitalWrite(18, LOW);
-                    GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                    GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL); // 不选中
                     //Serial.println("AFEEND");
                     currentState = STATE_PROCESS_DATA;
                 }
@@ -143,7 +143,8 @@ void runStateMachine() {
                 interrupts();                    
                 //ad7680_sample_count = 0;
                 //digitalWrite(18, HIGH);
-                GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                //GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL); // 选中
+                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL); // 选中
                 currentState = STATE_READ_AD7680_DATA;
             }
             break; // 使用break而不是return
@@ -155,14 +156,18 @@ void runStateMachine() {
                 interrupts();
                 //ad7680_data = AD7680::readDataMean(ad7680_data);
                 //ad7680_data = AD7680::readData();
+                currentState = STATE_PULSE_END;
             }
+            break;
+
+        case STATE_PULSE_END:
             if (eventFlags & EVENT_END_PULSE) {
                 noInterrupts();
                 eventFlags &= ~EVENT_END_PULSE; // 清除标志位
                 interrupts();
                 //短时屏蔽中断
                 //digitalWrite(18, LOW);
-                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL); // 不选中
                 currentState = STATE_SET_IDAC;
             }
             break;
@@ -172,10 +177,19 @@ void runStateMachine() {
                 noInterrupts();
                 eventFlags &= ~EVENT_IDAC_AFE; // 清除标志位
                 interrupts();
+                ADS1220::reset();
+                ADS1220::configure();
                 //digitalWrite(PIN_SWITCH_CTRL, HIGH);
                 //digitalWrite(18, HIGH);
-                GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
+                //GPIO.out_w1ts.val = (1U << PIN_SWITCH_CTRL2); // 选中
                 //Serial.println("IDAC");
+                currentState = STATE_SET_IDAC2;
+            }
+            break;
+
+        case STATE_SET_IDAC2:
+            if(digitalRead(PIN_DRDY_ADS1220) == LOW){
+                uint32_t ad1220_data3 = ADS1220::readData();
                 currentState = STATE_READ_AD7680_DATA2;
             }
             break;
@@ -185,13 +199,17 @@ void runStateMachine() {
                 noInterrupts();
                 eventFlags &= ~EVENT_TRIGGER_AFE; // 清除标志位
                 interrupts();
-                //ad1220_data = ADS1220::readData();
+                //ad1220_data = AD7680::readData();
+                ADS1220::powerDown();
+                //ADS1220::reset();
+                //ADS1220::configureoff();
                 //digitalWrite(PIN_SWITCH_CTRL, LOW);
                 //digitalWrite(18, LOW);
-                GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
+                //GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL2); // 不选中
                 //Serial.println("AFEEND");
                 currentState = STATE_PROCESS_DATA;
             }
+
             break;
 
         case STATE_PROCESS_DATA:

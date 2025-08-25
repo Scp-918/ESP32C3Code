@@ -10,7 +10,7 @@
 #include "freertos/task.h"     // 引入任务相关头文件
 
 // 声明状态机任务句柄
-TaskHandle_t StateMachineTaskHandle = NULL;
+//TaskHandle_t StateMachineTaskHandle = NULL;
 
 void setup() {
 
@@ -26,7 +26,7 @@ void setup() {
     GPIO.out_w1tc.val = (1U << PIN_SWITCH_CTRL); // 确保引脚默认拉低
     */
     // 2. 初始化通信
-    initCommunication();
+    initCommunication2();
     Serial.println("ESP32-C3 Firmware Initializing...");
 
     // 3. 初始化SPI总线
@@ -45,6 +45,9 @@ void setup() {
     ADS1220::powerDown();
     Serial.println("ADS1220 Configured.");
 
+    //vTaskPrioritySet(NULL, 20);
+    //Serial.println("Loop task priority set to 20.");
+    
     /*
     // 5. 创建高优先级任务来运行状态机
     xTaskCreatePinnedToCore(
@@ -56,12 +59,13 @@ void setup() {
         &StateMachineTaskHandle, // 任务句柄
         0 // 运行在核心0
     );
-    Serial.println("State Machine Task created.");
     */
+    
+    Serial.println("State Machine Task created.");
 
     // 6. 初始化并启动定时器，它会触发状态机任务
     initTimers();
-    //Serial.println("Timers Initialized and Started. System is running.");
+    Serial.println("Timers Initialized and Started. System is running.");
     //delay(2000);
 }
 
@@ -84,5 +88,25 @@ void loop() {
     delay(1000);
     */
     //vTaskDelay(1000); // 无限延迟，不执行任何操作
-    runStateMachine();
+    //runStateMachine();
+    
+    //ADS1220::reset();
+    ADS1220::configureIDAC();
+    delay(100); // 等待初始化读出数据
+    if (digitalRead(PIN_DRDY_ADS1220) == LOW) {
+        uint32_t ads1220_data3 = ADS1220::readData();
+    }
+    delay(1000);
+    ADS1220::powerDown();
+    delay(1000);
+    
+    /*
+    digitalWrite(PIN_SWITCH_CTRL, LOW);
+    delay(1000);
+    digitalWrite(PIN_SWITCH_CTRL, HIGH);
+    delay(1000);
+    */
+    //digitalWrite(PIN_SWITCH_CTRL, HIGH);
+    //delay(1000);
+    //Serial.println("Loop");
 }

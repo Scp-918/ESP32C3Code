@@ -33,6 +33,10 @@ void initCommunication() {
     Serial.begin(SERIAL_BAUD_RATE);
 }
 
+void initCommunication2() {
+    Serial.begin(SERIAL_BAUD_RATE);
+}
+
 // 新的非阻塞发送函数，使用DMA将数据帧发送到串口
 void sendDataFrame(const DataFrame* frame) {
     // uart_write_bytes是非阻塞的，它将数据拷贝到内部DMA缓冲区，并立即返回

@@ -3,12 +3,15 @@
 
 #include "config.h"
 #include "communication.h" // 引用DataFrame
+#include "freertos/task.h" // 引入任务头文件
 
 // 定义系统运行的各个状态
 typedef enum {
     STATE_IDLE,
     STATE_READ_AD7680_DATA,
+    STATE_PULSE_END,
     STATE_SET_IDAC,
+    STATE_SET_IDAC2,
     STATE_READ_AD7680_DATA2,
     STATE_PROCESS_DATA
 } SystemState;

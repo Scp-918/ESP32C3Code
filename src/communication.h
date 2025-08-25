@@ -19,6 +19,7 @@ struct DataFrame {
 };
 
 void initCommunication();
+void initCommunication2();
 // 新的非阻塞发送函数
 void sendDataFrame(const DataFrame* frame);
 

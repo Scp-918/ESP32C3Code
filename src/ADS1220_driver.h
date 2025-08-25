@@ -7,6 +7,8 @@ namespace ADS1220 {
     void init();
     void reset();
     void configure();
+    void configureoff();
+    void configureIDAC();
     void startConversion();
     uint32_t readData();
     void powerDown();
